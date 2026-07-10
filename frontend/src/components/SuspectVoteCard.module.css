@@ -1,0 +1,110 @@
+.card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background-color: var(--panel-bg);
+  border: 1px solid var(--panel-border);
+  border-radius: var(--border-radius-lg);
+  padding: var(--spacing-xl) var(--spacing-md);
+  text-align: center;
+  gap: var(--spacing-sm);
+  transition: all 0.2s;
+}
+
+.isMe {
+  border-color: var(--accent-color);
+  background-color: rgba(242, 193, 78, 0.05);
+}
+
+.avatar {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background-color: #1c2331;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--text-secondary);
+  margin-bottom: var(--spacing-sm);
+  border: 2px solid var(--panel-border);
+}
+
+.name {
+  font-size: 1.25rem;
+  color: var(--text-primary);
+}
+
+.role {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: var(--spacing-md);
+}
+
+.voteCount {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  font-size: 0.85rem;
+  color: var(--danger-color);
+  font-weight: 600;
+}
+
+.dot {
+  width: 8px;
+  height: 8px;
+  background-color: var(--danger-color);
+  border-radius: 50%;
+  box-shadow: 0 0 5px var(--danger-glow);
+}
+
+.meterWrapper {
+  width: 100%;
+  margin-top: var(--spacing-sm);
+  margin-bottom: var(--spacing-md);
+}
+
+.voteBtn {
+  width: 100%;
+  background-color: transparent;
+  border: 1px solid var(--danger-color);
+  color: var(--danger-color);
+  padding: var(--spacing-sm);
+  font-weight: 700;
+  border-radius: var(--border-radius-md);
+  transition: all 0.2s;
+}
+
+.voteBtn:hover {
+  background-color: var(--danger-glow);
+  color: #fff;
+}
+
+.disabledBtn {
+  width: 100%;
+  background-color: rgba(0,0,0,0.2);
+  border: 1px solid var(--panel-border);
+  color: var(--text-muted);
+  padding: var(--spacing-sm);
+  font-weight: 600;
+  font-size: 0.8rem;
+  border-radius: var(--border-radius-md);
+  cursor: not-allowed;
+}
+
+.youBadge {
+  position: absolute;
+  top: -10px;
+  right: -10px;
+  background-color: var(--accent-color);
+  color: #000;
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 4px 8px;
+  border-radius: 12px;
+  letter-spacing: 0.05em;
+}

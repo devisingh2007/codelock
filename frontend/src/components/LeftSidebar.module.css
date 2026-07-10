@@ -1,0 +1,103 @@
+.sidebar {
+  width: 250px;
+  background-color: var(--bg-color);
+  border-right: 1px solid var(--panel-border);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  height: 100vh;
+  padding: var(--spacing-lg) 0;
+  flex-shrink: 0;
+}
+
+.topSection {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xl);
+}
+
+.caseInfo {
+  padding: 0 var(--spacing-md);
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+  align-items: center;
+  text-align: center;
+}
+
+.thumbnail {
+  width: 100px;
+  height: 100px;
+  background-color: var(--panel-bg);
+  border: 1px solid var(--panel-border);
+  border-radius: var(--border-radius-md);
+  background-image: linear-gradient(45deg, #131826, #1c2331);
+}
+
+.caseLabel {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.caseName {
+  font-size: 1.25rem;
+  color: var(--text-primary);
+}
+
+.navIcons {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+  align-items: center;
+}
+
+.navBtn {
+  color: var(--text-secondary);
+  padding: var(--spacing-sm);
+  border-radius: var(--border-radius-md);
+  transition: all 0.2s;
+}
+
+.navBtn:hover {
+  color: var(--accent-color);
+  background-color: rgba(255, 255, 255, 0.05);
+}
+
+.bottomSection {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+  padding: 0 var(--spacing-md);
+}
+
+.accuseBtn {
+  background-color: transparent;
+  color: var(--danger-color);
+  border: 1px solid var(--danger-color);
+  padding: var(--spacing-sm);
+  text-align: center;
+  font-weight: 700;
+  border-radius: var(--border-radius-md);
+  letter-spacing: 0.05em;
+  transition: all 0.2s;
+}
+
+.accuseBtn:hover {
+  background-color: var(--danger-glow);
+  color: #fff;
+}
+
+.actionBtn {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  color: var(--text-secondary);
+  padding: var(--spacing-sm);
+  border-radius: var(--border-radius-md);
+  transition: all 0.2s;
+}
+
+.actionBtn:hover {
+  color: var(--text-primary);
+  background-color: rgba(255, 255, 255, 0.05);
+}

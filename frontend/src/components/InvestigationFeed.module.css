@@ -1,0 +1,189 @@
+.feedContainer {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background-color: transparent;
+  overflow: hidden;
+}
+
+.feed {
+  flex: 1;
+  overflow-y: auto;
+  padding: var(--spacing-md) 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+}
+
+/* Scrollbar styling */
+.feed::-webkit-scrollbar {
+  width: 6px;
+}
+.feed::-webkit-scrollbar-track {
+  background: transparent;
+}
+.feed::-webkit-scrollbar-thumb {
+  background-color: var(--panel-border);
+  border-radius: 4px;
+}
+
+.message {
+  padding: var(--spacing-sm) var(--spacing-md);
+  border-radius: var(--border-radius-md);
+  font-size: 0.95rem;
+}
+
+.time {
+  font-size: 0.65rem;
+  color: var(--text-muted);
+  float: right;
+  margin-left: var(--spacing-sm);
+}
+
+.header {
+  margin-bottom: var(--spacing-xs);
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+}
+
+.playerName {
+  font-weight: 600;
+  color: var(--accent-color);
+}
+
+.gmName {
+  font-weight: 600;
+  color: var(--text-primary);
+  font-size: 0.75rem;
+}
+
+/* Message Types */
+.event {
+  font-style: italic;
+  color: var(--text-secondary);
+}
+
+.narrative {
+  font-size: 1.25rem;
+  color: var(--accent-color);
+  text-align: center;
+  padding: var(--spacing-lg);
+  line-height: 1.6;
+  opacity: 0.9;
+}
+
+.divider {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+  margin: var(--spacing-md) 0;
+}
+.divider::before, .divider::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background-color: var(--panel-border);
+}
+.dividerTime {
+  color: var(--accent-color);
+  font-size: 0.75rem;
+}
+.dividerText {
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  text-transform: uppercase;
+}
+
+.question {
+  background-color: rgba(255, 255, 255, 0.03);
+  border-left: 2px solid var(--accent-color);
+}
+
+.gmMessage {
+  background-color: rgba(242, 193, 78, 0.05);
+  border-left: 2px solid var(--accent-color);
+  border-radius: var(--border-radius-sm);
+  box-shadow: 0 0 10px rgba(242, 193, 78, 0.05);
+}
+
+.gmMessage .gmName {
+  color: var(--accent-color);
+  letter-spacing: 0.1em;
+}
+
+.clue {
+  background-color: rgba(242, 193, 78, 0.1);
+  border: 1px solid var(--accent-color);
+  color: var(--text-primary);
+}
+
+.clueNew {
+  animation: glowPulse 2s infinite;
+}
+
+@keyframes glowPulse {
+  0% { box-shadow: 0 0 5px rgba(242, 193, 78, 0.2); }
+  50% { box-shadow: 0 0 20px rgba(242, 193, 78, 0.6); }
+  100% { box-shadow: 0 0 5px rgba(242, 193, 78, 0.2); }
+}
+
+.accusation {
+  background-color: rgba(192, 57, 43, 0.1);
+  border: 1px solid var(--danger-color);
+}
+.accusation .playerName {
+  color: var(--danger-color);
+}
+
+/* Input Area */
+.inputArea {
+  margin-top: var(--spacing-sm);
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+}
+
+.statusLabel {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  font-size: 0.65rem;
+  color: var(--success-color);
+}
+.dot {
+  width: 6px;
+  height: 6px;
+  background-color: var(--success-color);
+  border-radius: 50%;
+  box-shadow: 0 0 5px var(--success-color);
+}
+
+.inputWrapper {
+  display: flex;
+  background-color: var(--panel-bg);
+  border: 1px solid var(--panel-border);
+  border-radius: var(--border-radius-md);
+  padding: 4px;
+}
+.input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  color: var(--text-primary);
+  padding: var(--spacing-sm) var(--spacing-md);
+  font-size: 0.95rem;
+}
+.input:focus {
+  outline: none;
+}
+.sendBtn {
+  background-color: var(--accent-color);
+  color: #000;
+  font-weight: 700;
+  padding: 0 var(--spacing-lg);
+  border-radius: var(--border-radius-sm);
+}
+.sendBtn:hover {
+  background-color: var(--accent-hover);
+}
