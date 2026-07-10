@@ -116,8 +116,15 @@ const LobbyPage = () => {
     setStarting(true);
     setError('');
     try {
-      // Host triggers the mystery generation
-      await generateMysteryForRoomCode(roomCode);
+      const difficulty = localStorage.getItem('difficulty') || 'medium';
+      const theme = localStorage.getItem('theme') || 'mansion';
+      const caseName = localStorage.getItem('caseName') || 'Case File';
+      
+      // Host triggers the mystery generation with case settings
+      await generateMysteryForRoomCode(roomCode, {
+        difficulty,
+        locationHints: `Theme: ${theme}. Case Name: ${caseName}`
+      });
     } catch (err) {
       console.error(err);
       setError(err.message || 'Failed to generate mystery. Check if Ollama is running.');

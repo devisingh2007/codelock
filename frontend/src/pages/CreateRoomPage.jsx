@@ -21,6 +21,12 @@ const CreateRoomPage = () => {
     try {
       await autoAuthenticate(alias);
       const room = await createRoom();
+      
+      // Store case configuration for mystery generator
+      localStorage.setItem('difficulty', difficulty.toLowerCase());
+      localStorage.setItem('theme', theme);
+      localStorage.setItem('caseName', caseName);
+      
       navigate(`/lobby/${room.roomCode}`);
     } catch (err) {
       console.error(err);

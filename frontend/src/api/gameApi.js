@@ -98,11 +98,14 @@ export async function getRoom(roomCode) {
   return data.room;
 }
 
-export async function generateMysteryForRoomCode(roomCode) {
+export async function generateMysteryForRoomCode(roomCode, options = {}) {
   const res = await fetch(`${API_BASE_URL}/api/game/${roomCode.toUpperCase()}/generate-mystery`, {
     method: 'POST',
     headers: getHeaders(),
-    body: JSON.stringify({ difficulty: 'medium' })
+    body: JSON.stringify({
+      difficulty: options.difficulty || 'medium',
+      locationHints: options.locationHints || ''
+    })
   });
   const data = await res.json();
   if (!res.ok) throw new Error(data.error || 'Failed to generate mystery');
