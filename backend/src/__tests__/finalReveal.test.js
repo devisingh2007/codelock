@@ -47,10 +47,10 @@ const mockStory = {
   title: "Murder at Villa Rose",
   location: "Living Room",
   victim: { name: "Victim X", description: "Wealthy estate owner" },
-  crime: { summary: "Poisoned tea", killer: "detective_suspect_2", type: "poisoning", weapon: "poison" },
+  crime: { summary: "Poisoned tea", killer: "detective_player_2", type: "poisoning", weapon: "poison" },
   suspects: [
-    { name: "detective_suspect_1", background: "Doctor", relationshipToVictim: "Physician", isMurderer: false },
-    { name: "detective_suspect_2", background: "Butler", relationshipToVictim: "Servant", isMurderer: true },
+    { name: "detective_player_1", background: "Doctor", relationshipToVictim: "Physician", isMurderer: false },
+    { name: "detective_player_2", background: "Butler", relationshipToVictim: "Servant", isMurderer: true },
   ],
   timeline: [{ time: "8:00 PM", event: "Tea served" }],
   clues: ["poison vial", "broken glass"],
