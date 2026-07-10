@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { ArrowLeft } from 'lucide-react';
 import { autoAuthenticate, createRoom } from '../api/gameApi';
 import lampImg from '../assets/game/studylamp.png';
 import styles from './CreateRoomPage.module.css';
@@ -35,6 +36,10 @@ const CreateRoomPage = () => {
       <main className={styles.mainContent}>
         <div className={styles.formContainer}>
           <div className={styles.formWrapper}>
+            <button className={styles.backBtn} onClick={() => navigate('/')} type="button">
+              <ArrowLeft size={16} /> Back to Dossier
+            </button>
+
             <div className={styles.header}>
               <h1 className="font-serif">Initiate Investigation</h1>
               <p className="text-muted">The mystery awaits your orchestration. Configure the crime scene below.</p>

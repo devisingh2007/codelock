@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { getLobbyState, connectSocket, disconnectSocket, sendMessage, generateMysteryForRoomCode } from '../api/gameApi';
-import TopNavBar from '../components/TopNavBar';
+import { getLobbyState, connectSocket, disconnectSocket, sendMessage, generateMysteryForRoomCode, kickPlayer, addPlayer } from '../api/gameApi';
 import PlayerCard from '../components/PlayerCard';
 import SuspicionMeter from '../components/SuspicionMeter';
 import { Copy, Plus, Send } from 'lucide-react';
@@ -90,6 +89,24 @@ const LobbyPage = () => {
           navigate(`/game/${roomCode}/character`);
         }, 1500);
       }
+      
+      else if (event === 'user-kicked') {
+        fetchState();
+        setRoomState(currState => {
+          if (currState) {
+            const me = currState.players.find(p => p.isMe);
+            if (me && me.id === payload.userId) {
+              alert("You have been kicked from the lobby by the host.");
+              navigate('/');
+            }
+          }
+          return currState;
+        });
+        setChatMessages(prev => [
+          ...prev,
+          { id: `kick-${Date.now()}`, sender: 'System', message: `${payload.username} has been kicked from the lobby.` }
+        ]);
+      }
     });
 
     return () => {
@@ -125,6 +142,25 @@ const LobbyPage = () => {
     navigator.clipboard.writeText(roomCode);
   };
 
+  const handleKickPlayer = (playerId, playerName) => {
+    kickPlayer(roomCode, playerId, (res) => {
+      if (res.error) {
+        alert(res.error);
+      }
+    });
+  };
+
+  const handleAddPlayer = () => {
+    const name = prompt("Enter detective name/alias to add to the lobby:");
+    if (name && name.trim()) {
+      addPlayer(roomCode, name.trim(), (res) => {
+        if (res.error) {
+          alert(res.error);
+        }
+      });
+    }
+  };
+
   if (!roomState) {
     return <div className={styles.loading}>Connecting to the Estate...</div>;
   }
@@ -135,8 +171,6 @@ const LobbyPage = () => {
 
   return (
     <div className={styles.container}>
-      <TopNavBar />
-
       <main className={styles.mainContent}>
         {/* Left/Center Column */}
         <div className={styles.leftCol}>
@@ -156,11 +190,25 @@ const LobbyPage = () => {
           </div>
 
           <div className={styles.playersGrid}>
-            {players.map(p => <PlayerCard key={p.id} player={p} />)}
-            <button className={styles.inviteCard} onClick={handleCopyCode}>
-              <Plus size={24} className="mb-2" />
-              <span>COPY ROOM CODE</span>
-            </button>
+            {players.map(p => (
+              <PlayerCard 
+                key={p.id} 
+                player={p} 
+                showKickBtn={isHost && !p.isHost}
+                onKick={handleKickPlayer}
+              />
+            ))}
+            {isHost ? (
+              <button className={styles.addPlayerCard} onClick={handleAddPlayer}>
+                <Plus size={24} className="mb-2" />
+                <span>ADD DETECTIVE</span>
+              </button>
+            ) : (
+              <button className={styles.inviteCard} onClick={handleCopyCode}>
+                <Plus size={24} className="mb-2" />
+                <span>COPY ROOM CODE</span>
+              </button>
+            )}
           </div>
 
           <div className={`hud-card ${styles.chatPanel}`}>

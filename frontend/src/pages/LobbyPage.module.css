@@ -88,7 +88,7 @@
   gap: var(--spacing-md);
 }
 
-.inviteCard {
+.inviteCard, .addPlayerCard {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -101,12 +101,14 @@
   font-size: 0.8rem;
   transition: all 0.2s;
   background-color: rgba(255, 255, 255, 0.02);
+  cursor: pointer;
+  width: 100%;
 }
 
-.inviteCard:hover {
+.inviteCard:hover, .addPlayerCard:hover {
   border-color: var(--accent-color);
   color: var(--accent-color);
-  background-color: rgba(242, 193, 78, 0.05);
+  background-color: rgba(185, 28, 28, 0.05);
 }
 
 .chatPanel {
@@ -254,3 +256,98 @@
   font-size: 0.8rem;
   color: var(--text-muted);
 }
+
+/* ============================================================
+   LOBBY ANIMATIONS
+   ============================================================ */
+
+/* Page entrance */
+.container {
+  animation: fadeIn 0.5s ease both;
+}
+
+/* Case title: staggered reveal */
+.caseTitle {
+  animation: fadeUp 0.7s cubic-bezier(0.22,1,0.36,1) 0.1s both;
+}
+
+/* Room code box: slide from right */
+.roomCodeBox {
+  animation: fadeLeft 0.6s cubic-bezier(0.22,1,0.36,1) 0.2s both;
+}
+
+/* Players grid: each card fades up with stagger (applied via nth-child in CSS) */
+.playersGrid {
+  animation: fadeUp 0.6s cubic-bezier(0.22,1,0.36,1) 0.3s both;
+}
+
+/* Chat panel: fade in from bottom */
+.chatPanel {
+  animation: fadeUp 0.7s cubic-bezier(0.22,1,0.36,1) 0.35s both;
+}
+
+/* Right column params: slide from right */
+.rightCol {
+  animation: fadeLeft 0.7s cubic-bezier(0.22,1,0.36,1) 0.25s both;
+}
+
+/* START INVESTIGATION button: continuous pulse when host can act */
+.startBtn:not(:disabled) {
+  animation: pulseGlow 2.5s ease-in-out infinite;
+}
+.startBtn:not(:disabled):hover {
+  animation: none;
+  box-shadow: 0 0 40px rgba(185, 28, 28, 0.9);
+  transform: translateY(-2px) scale(1.02);
+}
+.startBtn {
+  transition: transform 0.2s ease, box-shadow 0.2s ease, opacity 0.2s ease;
+}
+
+/* Chat messages: slide in from left */
+.chatMsg {
+  animation: fadeRight 0.3s ease both;
+}
+
+/* Invite / Add Detective card: border pulse */
+.inviteCard, .addPlayerCard {
+  animation: pulseGlowSubtle 3s ease-in-out infinite;
+}
+
+/* Code text glow on hover */
+.code {
+  transition: text-shadow 0.3s ease, color 0.3s ease;
+}
+.codeRow:hover .code {
+  text-shadow: 0 0 12px rgba(185, 28, 28, 0.6);
+  color: #ffffff;
+}
+
+/* Copy button spin-bounce */
+.copyBtn {
+  transition: transform 0.25s cubic-bezier(0.34,1.56,0.64,1), color 0.2s ease;
+}
+.copyBtn:hover {
+  transform: rotate(15deg) scale(1.2);
+  color: #b91c1c !important;
+}
+
+/* Loading state */
+.loading {
+  animation: fadeIn 0.4s ease both;
+}
+
+/* Keyframes (local supplement) */
+@keyframes fadeIn    { from { opacity: 0; } to { opacity: 1; } }
+@keyframes fadeUp    { from { opacity: 0; transform: translateY(24px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes fadeLeft  { from { opacity: 0; transform: translateX(24px); } to { opacity: 1; transform: translateX(0); } }
+@keyframes fadeRight { from { opacity: 0; transform: translateX(-24px); } to { opacity: 1; transform: translateX(0); } }
+@keyframes pulseGlow {
+  0%, 100% { box-shadow: 0 0 12px rgba(185,28,28,0.35); }
+  50%       { box-shadow: 0 0 28px rgba(185,28,28,0.75), 0 0 60px rgba(185,28,28,0.25); }
+}
+@keyframes pulseGlowSubtle {
+  0%, 100% { box-shadow: none; border-color: var(--panel-border); }
+  50%       { box-shadow: 0 0 14px rgba(185,28,28,0.2); border-color: rgba(185,28,28,0.35); }
+}
+

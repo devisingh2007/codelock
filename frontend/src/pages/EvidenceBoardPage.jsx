@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import TopNavBar from '../components/TopNavBar';
 import { getClueBoard, toggleClueStatus } from '../api/gameApi';
 import { Filter, Search, ArrowLeft } from 'lucide-react';
 import styles from './EvidenceBoardPage.module.css';
@@ -40,8 +39,6 @@ const EvidenceBoardPage = () => {
 
   return (
     <div className={styles.pageLayout}>
-      <TopNavBar />
-      
       <main className={styles.boardContainer}>
         
         <div className={styles.boardHeader}>

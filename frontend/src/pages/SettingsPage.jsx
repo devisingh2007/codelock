@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import TopNavBar from '../components/TopNavBar';
 import { Settings, Volume2, Globe, Shield, Monitor } from 'lucide-react';
 import styles from './SettingsPage.module.css';
 
@@ -41,8 +40,6 @@ const SettingsPage = () => {
 
   return (
     <div className={styles.pageLayout}>
-      <TopNavBar />
-      
       <main className={styles.mainContent}>
         <div className={styles.formContainer}>
           <div className={styles.header}>

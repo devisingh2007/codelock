@@ -7,6 +7,34 @@
   border: 1px solid var(--panel-border);
   border-radius: var(--border-radius-md);
   box-shadow: var(--shadow-sm);
+  position: relative;
+}
+
+.kickBtn {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background-color: rgba(185, 28, 28, 0.1);
+  border: 1px solid rgba(185, 28, 28, 0.3);
+  color: #b91c1c;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1rem;
+  font-weight: 700;
+  line-height: 1;
+  transition: all 0.2s;
+  cursor: pointer;
+  z-index: 10;
+}
+
+.kickBtn:hover {
+  background-color: #b91c1c;
+  color: #ffffff;
+  box-shadow: 0 0 10px rgba(185, 28, 28, 0.5);
 }
 
 .eliminated {
@@ -97,3 +125,102 @@
 .communicating {
   color: var(--accent-color);
 }
+
+/* ============================================================
+   PLAYER CARD ANIMATIONS
+   ============================================================ */
+
+/* Entrance: each card fades up */
+.card {
+  animation: cardEnter 0.45s cubic-bezier(0.22,1,0.36,1) both;
+  transition: transform 0.25s cubic-bezier(0.22,1,0.36,1),
+              border-color 0.25s ease,
+              box-shadow 0.25s ease;
+}
+
+/* Hover lift */
+.card:hover {
+  transform: translateY(-4px);
+  border-color: rgba(185, 28, 28, 0.3);
+  box-shadow: 0 10px 28px rgba(0,0,0,0.45),
+              0 0 0 1px rgba(185,28,28,0.15);
+}
+
+/* Avatar: glow ring on card hover */
+.avatar {
+  transition: box-shadow 0.3s ease, border-color 0.3s ease;
+}
+.card:hover .avatar {
+  box-shadow: 0 0 14px rgba(185,28,28,0.35);
+  border-color: rgba(185,28,28,0.45);
+}
+
+/* Name: subtle brighten */
+.name {
+  transition: color 0.2s ease;
+}
+.card:hover .name {
+  color: #ffffff;
+}
+
+/* Status dot: pulse */
+.statusDot {
+  animation: dotPulse 1.5s ease-in-out infinite;
+}
+
+/* Kick button: danger flash on hover */
+.kickBtn {
+  transition: all 0.2s cubic-bezier(0.34,1.56,0.64,1);
+  opacity: 0;
+}
+.card:hover .kickBtn {
+  opacity: 1;
+}
+.kickBtn:hover {
+  animation: kickFlash 0.4s ease;
+}
+
+/* HOST tag glow */
+.hostTag {
+  animation: hostPulse 3s ease-in-out infinite;
+}
+
+/* YOU tag */
+.youTag {
+  animation: scalePop 0.4s cubic-bezier(0.34,1.56,0.64,1) 0.2s both;
+}
+
+/* Eliminated card: flicker effect */
+.eliminated {
+  animation: eliminatedFlicker 1.5s ease-in-out;
+}
+
+/* Local keyframes */
+@keyframes cardEnter {
+  from { opacity: 0; transform: translateY(16px) scale(0.97); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+@keyframes dotPulse {
+  0%, 100% { transform: scale(1); opacity: 1; box-shadow: 0 0 4px var(--success-color); }
+  50%       { transform: scale(1.4); opacity: 0.7; box-shadow: 0 0 8px var(--success-color); }
+}
+@keyframes kickFlash {
+  0%, 100% { background-color: #b91c1c; }
+  50%       { background-color: #ff3333; box-shadow: 0 0 16px rgba(255,51,51,0.7); }
+}
+@keyframes hostPulse {
+  0%, 100% { box-shadow: none; }
+  50%       { box-shadow: 0 0 8px rgba(185,28,28,0.5); }
+}
+@keyframes scalePop {
+  0%   { transform: scale(0.6); opacity: 0; }
+  70%  { transform: scale(1.1); }
+  100% { transform: scale(1); opacity: 1; }
+}
+@keyframes eliminatedFlicker {
+  0%, 100% { opacity: 0.5; }
+  25%       { opacity: 0.3; }
+  50%       { opacity: 0.6; }
+  75%       { opacity: 0.35; }
+}
+

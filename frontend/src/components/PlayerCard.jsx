@@ -2,9 +2,21 @@ import React from 'react';
 import { Mic, MicOff } from 'lucide-react';
 import styles from './PlayerCard.module.css';
 
-const PlayerCard = ({ player }) => {
+const PlayerCard = ({ player, showKickBtn = false, onKick }) => {
   return (
     <div className={`${styles.card} ${player.status === 'ELIMINATED' ? styles.eliminated : ''}`}>
+      {showKickBtn && (
+        <button 
+          className={styles.kickBtn} 
+          onClick={(e) => {
+            e.stopPropagation();
+            onKick(player.id, player.name);
+          }}
+          title="Kick Player"
+        >
+          &times;
+        </button>
+      )}
       <div className={styles.avatar}>
         {player.initials}
       </div>

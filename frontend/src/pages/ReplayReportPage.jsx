@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import TopNavBar from '../components/TopNavBar';
 import { getReplayReport } from '../api/gameApi';
 import { FileText, Clock, AlertTriangle, Crosshair, Award } from 'lucide-react';
 import styles from './ReplayReportPage.module.css';
@@ -28,7 +27,6 @@ const ReplayReportPage = () => {
 
   return (
     <div className={styles.pageLayout}>
-      <TopNavBar />
       <main className={styles.mainContent}>
         <div className={styles.reportContainer}>
           

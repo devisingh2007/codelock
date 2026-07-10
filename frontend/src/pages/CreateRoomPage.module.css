@@ -19,6 +19,12 @@
   align-items: center; /* Center the wrapper horizontally */
   overflow-y: auto;
   background-color: #05070c;
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+}
+
+.formContainer::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, Opera */
 }
 
 .formWrapper {
@@ -27,6 +33,31 @@
   display: flex;
   flex-direction: column;
   gap: var(--spacing-xl);
+}
+
+.backBtn {
+  align-self: flex-start;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-family: 'Roboto Mono', monospace;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #6b7280;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  margin-bottom: var(--spacing-sm);
+  transition: all 0.2s;
+  cursor: pointer;
+  background-color: rgba(19, 24, 38, 0.2);
+}
+
+.backBtn:hover {
+  color: #ffffff;
+  border-color: #b91c1c;
+  background-color: rgba(185, 28, 28, 0.1);
+  box-shadow: 0 0 10px rgba(185, 28, 28, 0.2);
 }
 
 .header {
@@ -309,3 +340,83 @@ input:checked + .slider:before {
   50% { opacity: 1; }
   100% { opacity: 0.4; }
 }
+
+/* ============================================================
+   CREATE ROOM ANIMATIONS
+   ============================================================ */
+
+/* Form container: slide from left */
+.formContainer {
+  animation: slideFromLeft 0.6s cubic-bezier(0.22,1,0.36,1) both;
+}
+
+/* Panel image: slide from right + float */
+.imagePanel {
+  animation: slideFromRight 0.7s cubic-bezier(0.22,1,0.36,1) 0.1s both;
+}
+
+/* Form wrapper stagger */
+.backBtn    { animation: fadeUpLocal 0.5s ease 0.1s both; }
+.header     { animation: fadeUpLocal 0.5s ease 0.2s both; }
+
+/* Inputs: subtle left-border glow on focus */
+input, select, textarea {
+  transition: border-color 0.25s ease,
+              box-shadow 0.25s ease,
+              transform 0.15s ease;
+}
+input:focus, select:focus, textarea:focus {
+  border-color: #b91c1c !important;
+  box-shadow: 0 0 0 3px rgba(185,28,28,0.15),
+              inset 0 0 0 1px rgba(185,28,28,0.2);
+  transform: scale(1.005);
+}
+
+/* Submit button: pulse glow */
+.submitBtn {
+  animation: btnPulse 2.5s ease-in-out infinite;
+}
+.submitBtn:hover {
+  animation: none;
+  box-shadow: 0 0 35px rgba(185,28,28,0.8);
+  transform: translateY(-2px) scale(1.02);
+}
+
+/* Difficulty / channel pills: spring on click */
+.diffBtn, .channelBtn {
+  transition: transform 0.2s cubic-bezier(0.34,1.56,0.64,1),
+              background-color 0.2s ease,
+              border-color 0.2s ease,
+              box-shadow 0.2s ease;
+}
+.diffBtn:hover, .channelBtn:hover {
+  transform: scale(1.05);
+}
+.diffBtnActive, .channelBtnActive {
+  animation: pillPop 0.3s cubic-bezier(0.34,1.56,0.64,1) both;
+}
+
+/* Form card sections: staggered fade up */
+.form > * {
+  animation: fadeUpLocal 0.55s cubic-bezier(0.22,1,0.36,1) both;
+}
+.form > *:nth-child(1) { animation-delay: 0.2s; }
+.form > *:nth-child(2) { animation-delay: 0.3s; }
+.form > *:nth-child(3) { animation-delay: 0.4s; }
+.form > *:nth-child(4) { animation-delay: 0.5s; }
+.form > *:nth-child(5) { animation-delay: 0.55s; }
+
+/* Local keyframes */
+@keyframes slideFromLeft  { from { opacity:0; transform:translateX(-32px); } to { opacity:1; transform:translateX(0); } }
+@keyframes slideFromRight { from { opacity:0; transform:translateX(32px);  } to { opacity:1; transform:translateX(0); } }
+@keyframes fadeUpLocal    { from { opacity:0; transform:translateY(18px);  } to { opacity:1; transform:translateY(0); } }
+@keyframes btnPulse {
+  0%, 100% { box-shadow: 0 0 12px rgba(185,28,28,0.4); }
+  50%       { box-shadow: 0 0 28px rgba(185,28,28,0.75), 0 0 60px rgba(185,28,28,0.25); }
+}
+@keyframes pillPop {
+  0%   { transform: scale(0.85); }
+  60%  { transform: scale(1.08); }
+  100% { transform: scale(1); }
+}
+

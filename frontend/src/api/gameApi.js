@@ -196,6 +196,10 @@ export function connectSocket(roomCode, onEvent) {
   socket.on('state-error', (data) => {
     if (onEvent) onEvent('state-error', data);
   });
+
+  socket.on('user-kicked', (data) => {
+    if (onEvent) onEvent('user-kicked', data);
+  });
   
   return socket;
 }
@@ -204,6 +208,18 @@ export function disconnectSocket() {
   if (socket) {
     socket.disconnect();
     socket = null;
+  }
+}
+
+export function kickPlayer(roomCode, playerId, callback) {
+  if (socket) {
+    socket.emit("kick-player", { roomCode, playerId }, callback);
+  }
+}
+
+export function addPlayer(roomCode, username, callback) {
+  if (socket) {
+    socket.emit("add-player", { roomCode, username }, callback);
   }
 }
 

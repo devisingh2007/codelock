@@ -227,6 +227,105 @@ const initSocket = (server) => {
     });
 
     // ─────────────────────────────────────────────
+    // kick-player (host only)
+    // ─────────────────────────────────────────────
+    socket.on("kick-player", async ({ roomCode, playerId }, callback) => {
+      try {
+        if (!roomCode || !playerId) {
+          return callback && callback({ error: "roomCode and playerId are required." });
+        }
+
+        const room = await GameRoom.findOne({ roomCode });
+        if (!room) {
+          return callback && callback({ error: "Room not found." });
+        }
+
+        if (room.host.toString() !== user._id.toString()) {
+          return callback && callback({ error: "Only the host can kick players." });
+        }
+
+        const kickedUser = await User.findById(playerId);
+
+        // Remove player from the room's players list
+        room.players = room.players.filter(p => p.toString() !== playerId.toString());
+        await room.save();
+
+        // Broadcast user-kicked
+        io.to(roomCode).emit("user-kicked", {
+          userId: playerId,
+          username: kickedUser ? kickedUser.username : "A player",
+          roomCode
+        });
+
+        console.log(`[Socket] Host ${user.username} kicked player ${playerId} from room ${roomCode}`);
+        if (callback) callback({ success: true });
+      } catch (err) {
+        console.error("[Socket] kick-player error:", err);
+        if (callback) callback({ error: "Internal server error." });
+      }
+    });
+
+    // ─────────────────────────────────────────────
+    // add-player (host only)
+    // ─────────────────────────────────────────────
+    socket.on("add-player", async ({ roomCode, username }, callback) => {
+      try {
+        if (!roomCode || !username) {
+          return callback && callback({ error: "roomCode and username are required." });
+        }
+
+        const trimmedUsername = username.trim();
+        if (!trimmedUsername) {
+          return callback && callback({ error: "Username cannot be empty." });
+        }
+
+        const room = await GameRoom.findOne({ roomCode });
+        if (!room) {
+          return callback && callback({ error: "Room not found." });
+        }
+
+        if (room.host.toString() !== user._id.toString()) {
+          return callback && callback({ error: "Only the host can add players." });
+        }
+
+        if (room.players.length >= room.maxPlayers) {
+          return callback && callback({ error: "Lobby is full." });
+        }
+
+        // Find or create the user
+        let targetUser = await User.findOne({ username: { $regex: new RegExp(`^${trimmedUsername}$`, 'i') } });
+        if (!targetUser) {
+          targetUser = await User.create({
+            username: trimmedUsername,
+            email: `${trimmedUsername.toLowerCase().replace(/\s+/g, '')}@mystery.com`,
+            password: "dummyPassword123"
+          });
+        }
+
+        // Check if player is already in room
+        if (room.players.includes(targetUser._id)) {
+          return callback && callback({ error: "Player is already in this lobby." });
+        }
+
+        room.players.push(targetUser._id);
+        await room.save();
+
+        // Broadcast user-joined to refresh player lists for all clients
+        io.to(roomCode).emit("user-joined", {
+          userId: targetUser._id,
+          username: targetUser.username,
+          roomCode,
+        });
+
+        console.log(`[Socket] Host ${user.username} added player ${targetUser.username} to room ${roomCode}`);
+        if (callback) callback({ success: true, username: targetUser.username });
+      } catch (err) {
+        console.error("[Socket] add-player error:", err);
+        if (callback) callback({ error: "Internal server error." });
+      }
+    });
+
+    // ─────────────────────────────────────────────
     // disconnect / cleanup
     // ─────────────────────────────────────────────
     socket.on("disconnect", (reason) => {

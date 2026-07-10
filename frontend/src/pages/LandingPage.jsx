@@ -82,9 +82,9 @@ const LandingPage = () => {
           <span className={styles.logoText}>MIDNIGHT <span>MURDER</span></span>
         </div>
         <nav className={styles.navLinks}>
-          <a className={styles.navLink}>HOW TO PLAY</a>
-          <a className={styles.navLink}>FEATURES</a>
-          <a className={styles.navLink}>FAQ</a>
+          <a className={styles.navLink} onClick={() => navigate('/how-to-play')}>HOW TO PLAY</a>
+          <a className={styles.navLink} onClick={() => navigate('/features')}>FEATURES</a>
+          <a className={styles.navLink} onClick={() => navigate('/faq')}>FAQ</a>
           <button className={styles.joinNavBtn} onClick={() => navigate('/join')}>
             <Users size={16} /> JOIN ROOM
           </button>

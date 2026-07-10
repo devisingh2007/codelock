@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import TopNavBar from '../components/TopNavBar';
 import { getProfile } from '../api/gameApi';
 import { Award, Target, BrainCircuit, Clock } from 'lucide-react';
 import styles from './ProfilePage.module.css';
@@ -21,8 +20,6 @@ const ProfilePage = () => {
 
   return (
     <div className={styles.pageLayout}>
-      <TopNavBar />
-
       <main className={styles.mainContent}>
         <div className={styles.header}>
           <h1 className="font-serif text-4xl text-accent mb-2">DETECTIVE DOSSIER</h1>

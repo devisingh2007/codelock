@@ -13,6 +13,9 @@ import ReplayReportPage from './pages/ReplayReportPage';
 import EvidenceBoardPage from './pages/EvidenceBoardPage';
 import ProfilePage from './pages/ProfilePage';
 import SettingsPage from './pages/SettingsPage';
+import HowToPlayPage from './pages/HowToPlayPage';
+import FeaturesPage from './pages/FeaturesPage';
+import FAQPage from './pages/FAQPage';
 import './styles/theme.css';
 import './index.css';
 
@@ -34,6 +37,9 @@ function App() {
           <Route path="/game/:roomCode/report" element={<ReplayReportPage />} />
           <Route path="/profile" element={<ProfilePage />} />
           <Route path="/settings" element={<SettingsPage />} />
+          <Route path="/how-to-play" element={<HowToPlayPage />} />
+          <Route path="/features" element={<FeaturesPage />} />
+          <Route path="/faq" element={<FAQPage />} />
         </Routes>
       </div>
     </Router>
