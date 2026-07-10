@@ -2,6 +2,7 @@ const { verifyToken } = require("../utils/jwt");
 const User = require("../models/User");
 const GameRoom = require("../models/GameRoom");
 const ChatMessage = require("../models/ChatMessage");
+const gameMasterService = require("../services/gameMasterService");
 
 // Module-level io instance (set when initSocket is called)
 let ioInstance = null;
@@ -94,7 +95,9 @@ const initSocket = (server) => {
           return callback && callback({ error: "Invalid room code." });
         }
 
-        const room = await GameRoom.findOne({ roomCode }).populate(
+        const code = roomCode.toUpperCase();
+
+        const room = await GameRoom.findOne({ roomCode: code }).populate(
           "players",
           "username"
         );
@@ -104,11 +107,11 @@ const initSocket = (server) => {
         }
 
         // Join Socket.IO room
-        socket.join(roomCode);
-        socket.currentRoom = roomCode;
+        socket.join(code);
+        socket.currentRoom = code;
 
         // Fetch last 20 messages for history
-        const history = await ChatMessage.find({ roomCode })
+        const history = await ChatMessage.find({ roomCode: code })
           .sort({ timestamp: -1 })
           .limit(20)
           .lean();
@@ -116,20 +119,18 @@ const initSocket = (server) => {
         history.reverse(); // oldest first
 
         // Notify everyone in the room
-        socket.to(roomCode).emit("user-joined", {
+        socket.to(code).emit("user-joined", {
           userId: user._id,
           username: user.username,
-          roomCode,
+          roomCode: code,
+          chatHistory: history,
         });
 
-        console.log(
-          `[Socket] ${user.username} joined room ${roomCode}`
-        );
-
+        console.log(`[Socket] ${user.username} joined room ${code}`);
         if (callback) {
           callback({
             success: true,
-            roomCode,
+            roomCode: code,
             players: room.players,
             chatHistory: history,
           });
@@ -170,16 +171,8 @@ const initSocket = (server) => {
     // ─────────────────────────────────────────────
     // room-message (chat)
     // ─────────────────────────────────────────────
-    socket.on("room-message", async ({ roomCode, message }, callback) => {
+    socket.on("room-message", async ({ roomCode, message } = {}, callback) => {
       try {
-        // Rate limit check
-        if (isRateLimited(socket.id)) {
-          return (
-            callback &&
-            callback({ error: "Rate limit exceeded. Slow down." })
-          );
-        }
-
         if (!roomCode || !message || typeof message !== "string") {
           return callback && callback({ error: "roomCode and message are required." });
         }
@@ -194,9 +187,19 @@ const initSocket = (server) => {
           );
         }
 
+        const code = roomCode.toUpperCase();
+
+        // Rate limit check
+        if (isRateLimited(socket.id)) {
+          return (
+            callback &&
+            callback({ error: "Rate limit exceeded. Slow down." })
+          );
+        }
+
         // Persist to DB
         const chatMsg = await ChatMessage.create({
-          roomCode,
+          roomCode: code,
           sender: user._id,
           senderUsername: user.username,
           message: trimmed,
@@ -204,7 +207,7 @@ const initSocket = (server) => {
 
         const payload = {
           id: chatMsg._id,
-          roomCode,
+          roomCode: code,
           sender: {
             id: user._id,
             username: user.username,
@@ -214,12 +217,17 @@ const initSocket = (server) => {
         };
 
         // Broadcast to everyone in the room (including sender)
-        io.to(roomCode).emit("room-message", payload);
+        io.to(code).emit("room-message", payload);
 
         console.log(
-          `[Socket] Message in ${roomCode} by ${user.username}: ${trimmed}`
+          `[Socket] Message in ${code} by ${user.username}: ${trimmed}`
         );
         if (callback) callback({ success: true, message: payload });
+
+        // Trigger AI Game Master rules processing
+        gameMasterService.processMessage(code, payload).catch((err) => {
+          console.error("[Socket] gameMasterService.processMessage error:", err);
+        });
       } catch (err) {
         console.error("[Socket] room-message error:", err);
         if (callback) callback({ error: "Internal server error." });
@@ -235,7 +243,9 @@ const initSocket = (server) => {
           return callback && callback({ error: "roomCode and playerId are required." });
         }
 
-        const room = await GameRoom.findOne({ roomCode });
+        const code = roomCode.toUpperCase();
+
+        const room = await GameRoom.findOne({ roomCode: code });
         if (!room) {
           return callback && callback({ error: "Room not found." });
         }
@@ -251,13 +261,13 @@ const initSocket = (server) => {
         await room.save();
 
         // Broadcast user-kicked
-        io.to(roomCode).emit("user-kicked", {
+        io.to(code).emit("user-kicked", {
           userId: playerId,
           username: kickedUser ? kickedUser.username : "A player",
-          roomCode
+          roomCode: code
         });
 
-        console.log(`[Socket] Host ${user.username} kicked player ${playerId} from room ${roomCode}`);
+        console.log(`[Socket] Host ${user.username} kicked player ${playerId} from room ${code}`);
         if (callback) callback({ success: true });
       } catch (err) {
         console.error("[Socket] kick-player error:", err);
@@ -279,7 +289,9 @@ const initSocket = (server) => {
           return callback && callback({ error: "Username cannot be empty." });
         }
 
-        const room = await GameRoom.findOne({ roomCode });
+        const code = roomCode.toUpperCase();
+
+        const room = await GameRoom.findOne({ roomCode: code });
         if (!room) {
           return callback && callback({ error: "Room not found." });
         }
@@ -311,13 +323,13 @@ const initSocket = (server) => {
         await room.save();
 
         // Broadcast user-joined to refresh player lists for all clients
-        io.to(roomCode).emit("user-joined", {
+        io.to(code).emit("user-joined", {
           userId: targetUser._id,
           username: targetUser.username,
-          roomCode,
+          roomCode: code,
         });
 
-        console.log(`[Socket] Host ${user.username} added player ${targetUser.username} to room ${roomCode}`);
+        console.log(`[Socket] Host ${user.username} added player ${targetUser.username} to room ${code}`);
         if (callback) callback({ success: true, username: targetUser.username });
       } catch (err) {
         console.error("[Socket] add-player error:", err);

@@ -1,0 +1,176 @@
+/* ============================================================
+   MIDNIGHT MURDER — Global Animation Library
+   ============================================================ */
+
+/* ----------------------------------------------------------
+   KEYFRAMES
+   ---------------------------------------------------------- */
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(28px); }
+  to   { opacity: 1; transform: translateY(0);    }
+}
+
+@keyframes fadeDown {
+  from { opacity: 0; transform: translateY(-20px); }
+  to   { opacity: 1; transform: translateY(0);     }
+}
+
+@keyframes fadeLeft {
+  from { opacity: 0; transform: translateX(28px); }
+  to   { opacity: 1; transform: translateX(0);    }
+}
+
+@keyframes fadeRight {
+  from { opacity: 0; transform: translateX(-28px); }
+  to   { opacity: 1; transform: translateX(0);     }
+}
+
+@keyframes scalePop {
+  0%   { opacity: 0; transform: scale(0.7); }
+  70%  { transform: scale(1.08); }
+  100% { opacity: 1; transform: scale(1); }
+}
+
+@keyframes pulseGlow {
+  0%, 100% { box-shadow: 0 0 12px rgba(185, 28, 28, 0.35); }
+  50%       { box-shadow: 0 0 28px rgba(185, 28, 28, 0.75), 0 0 60px rgba(185, 28, 28, 0.25); }
+}
+
+@keyframes pulseGlowSubtle {
+  0%, 100% { box-shadow: 0 0 0px rgba(185, 28, 28, 0.0); }
+  50%       { box-shadow: 0 0 18px rgba(185, 28, 28, 0.35); }
+}
+
+@keyframes shimmer {
+  0%   { background-position: -200% center; }
+  100% { background-position:  200% center; }
+}
+
+@keyframes breathe {
+  0%, 100% { opacity: 0.6; }
+  50%       { opacity: 0.85; }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0px) rotate(0deg); }
+  33%       { transform: translateY(-8px) rotate(0.5deg); }
+  66%       { transform: translateY(4px) rotate(-0.5deg); }
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes heartbeat {
+  0%, 100% { transform: scale(1); }
+  14%       { transform: scale(1.05); }
+  28%       { transform: scale(1); }
+  42%       { transform: scale(1.05); }
+  70%       { transform: scale(1); }
+}
+
+@keyframes dangerFlash {
+  0%, 100% { background-color: transparent; }
+  50%       { background-color: rgba(185, 28, 28, 0.15); }
+}
+
+@keyframes slideUp {
+  from { transform: translateY(100%); opacity: 0; }
+  to   { transform: translateY(0);    opacity: 1; }
+}
+
+@keyframes stampReveal {
+  0%   { opacity: 0; transform: scale(2.5) rotate(-10deg); }
+  60%  { transform: scale(0.95) rotate(1deg); }
+  100% { opacity: 1; transform: scale(1) rotate(0deg); }
+}
+
+@keyframes cursorBlink {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0; }
+}
+
+/* ----------------------------------------------------------
+   UTILITY CLASSES
+   ---------------------------------------------------------- */
+
+.anim-fade-in    { animation: fadeIn 0.5s ease both; }
+.anim-fade-up    { animation: fadeUp 0.6s cubic-bezier(0.22,1,0.36,1) both; }
+.anim-fade-down  { animation: fadeDown 0.5s ease both; }
+.anim-fade-left  { animation: fadeLeft 0.5s ease both; }
+.anim-fade-right { animation: fadeRight 0.5s ease both; }
+.anim-scale-pop  { animation: scalePop 0.4s cubic-bezier(0.34,1.56,0.64,1) both; }
+.anim-slide-up   { animation: slideUp 0.4s cubic-bezier(0.22,1,0.36,1) both; }
+.anim-stamp      { animation: stampReveal 0.5s cubic-bezier(0.34,1.56,0.64,1) both; }
+.anim-float      { animation: float 5s ease-in-out infinite; }
+.anim-spin       { animation: spin 0.8s linear infinite; }
+.anim-heartbeat  { animation: heartbeat 1.6s ease-in-out infinite; }
+.anim-breathe    { animation: breathe 4s ease-in-out infinite; }
+.anim-pulse-glow        { animation: pulseGlow 2.5s ease-in-out infinite; }
+.anim-pulse-glow-subtle { animation: pulseGlowSubtle 3s ease-in-out infinite; }
+.anim-danger-flash      { animation: dangerFlash 1s ease-in-out infinite; }
+
+.anim-shimmer {
+  background: linear-gradient(90deg,
+    var(--text-secondary) 25%,
+    #ffffff 50%,
+    var(--text-secondary) 75%
+  );
+  background-size: 200%;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: shimmer 3s linear infinite;
+}
+
+/* Stagger delay helpers */
+.delay-100  { animation-delay: 0.1s; }
+.delay-200  { animation-delay: 0.2s; }
+.delay-300  { animation-delay: 0.3s; }
+.delay-400  { animation-delay: 0.4s; }
+.delay-500  { animation-delay: 0.5s; }
+.delay-600  { animation-delay: 0.6s; }
+.delay-700  { animation-delay: 0.7s; }
+.delay-800  { animation-delay: 0.8s; }
+.delay-900  { animation-delay: 0.9s; }
+.delay-1000 { animation-delay: 1.0s; }
+.delay-1200 { animation-delay: 1.2s; }
+.delay-1500 { animation-delay: 1.5s; }
+
+/* Global button smooth press */
+button:active:not(:disabled) {
+  transform: scale(0.97);
+}
+
+/* Page entrance wrapper */
+.page-enter {
+  animation: fadeUp 0.55s cubic-bezier(0.22,1,0.36,1) both;
+}
+
+/* Loading spinner */
+.spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid rgba(185, 28, 28, 0.15);
+  border-top-color: #b91c1c;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+
+/* Scroll-triggered reveal */
+.reveal {
+  opacity: 0;
+  transform: translateY(24px);
+  transition: opacity 0.7s cubic-bezier(0.22,1,0.36,1),
+              transform 0.7s cubic-bezier(0.22,1,0.36,1);
+}
+.reveal.revealed {
+  opacity: 1;
+  transform: translateY(0);
+}

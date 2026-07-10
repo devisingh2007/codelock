@@ -39,6 +39,13 @@ const aiConfig = {
 
   /** Maximum number of retry attempts on failure */
   maxRetries: parseInt(process.env.OLLAMA_MAX_RETRIES, 10) || 3,
+
+  /** Role assignment rate limit in seconds per room */
+  roleAssignRateLimit: parseInt(process.env.ROLE_ASSIGN_RATE_LIMIT, 10) || 60,
+
+  /** AI Game Master rate limiting (Phase 8) */
+  gmMaxCallsPerMin: parseInt(process.env.GM_MAX_CALLS_PER_MIN, 10) || 5,
+  gmBackoffMs: parseInt(process.env.GM_BACKOFF_MS, 10) || 5000,
 };
 
 module.exports = aiConfig;

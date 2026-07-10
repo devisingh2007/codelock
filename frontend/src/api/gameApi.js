@@ -63,15 +63,18 @@ export async function autoAuthenticate(playerName) {
   }
 }
 
-export async function createRoom() {
+export async function createRoom({ scenario = 'mansion', difficulty = 'Medium', partySize = 6 } = {}) {
   const res = await fetch(`${API_BASE_URL}/api/game/create`, {
     method: 'POST',
-    headers: getHeaders()
+    headers: getHeaders(),
+    body: JSON.stringify({ scenario, difficulty, partySize })
   });
   const data = await res.json();
   if (!res.ok) throw new Error(data.error || 'Failed to create room');
   if (data.room && data.room.roomCode) {
     localStorage.setItem('roomCode', data.room.roomCode);
+    localStorage.setItem('roomScenario', data.room.scenario || scenario);
+    localStorage.setItem('roomDifficulty', data.room.difficulty || difficulty);
   }
   return data.room;
 }
@@ -98,11 +101,11 @@ export async function getRoom(roomCode) {
   return data.room;
 }
 
-export async function generateMysteryForRoomCode(roomCode) {
+export async function generateMysteryForRoomCode(roomCode, { scenario = 'mansion', difficulty = 'medium' } = {}) {
   const res = await fetch(`${API_BASE_URL}/api/game/${roomCode.toUpperCase()}/generate-mystery`, {
     method: 'POST',
     headers: getHeaders(),
-    body: JSON.stringify({ difficulty: 'medium' })
+    body: JSON.stringify({ scenario, difficulty })
   });
   const data = await res.json();
   if (!res.ok) throw new Error(data.error || 'Failed to generate mystery');
@@ -115,10 +118,10 @@ export async function getLobbyState(roomCode) {
     const currentUsername = localStorage.getItem('username');
     return {
       caseInfo: {
-        name: `Investigation ${room.roomCode}`,
+        name: `Investigation #${room.roomCode}`,
         number: room.roomCode,
-        scenario: 'Noir Mansion',
-        difficulty: 'Medium'
+        scenario: room.scenario || 'mansion',
+        difficulty: room.difficulty || 'Medium'
       },
       status: room.status,
       players: room.players.map(p => ({

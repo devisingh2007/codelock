@@ -8,7 +8,7 @@ const { io } = require("../sockets/gameSocket");
  * @param {string} hostId 
  * @returns {Promise<object>}
  */
-const createRoom = async (hostId) => {
+const createRoom = async (hostId, options = {}) => {
   // Generate a unique 6-character room code
   const roomCode = await generateRoomCode();
 
@@ -17,13 +17,14 @@ const createRoom = async (hostId) => {
     host: hostId,
     players: [hostId],
     status: "waiting",
-    maxPlayers: 4,
+    maxPlayers: options.maxPlayers || 4,
+    scenario: options.scenario || "mansion",
+    difficulty: options.difficulty || "Medium",
   });
 
   await newRoom.save();
 
   // Socket emit on creation
-  // io.emit('room-created', { roomCode, hostId })
   io.emit("room-created", { roomCode, hostId });
 
   return newRoom;

@@ -465,7 +465,127 @@ After the mystery is generated, all sockets in the room receive:
 ### Run Tests
 
 ```bash
-npm test                                    # run all 85 tests
+npm test                                    # run all 183 tests
 npm test -- --testPathPattern=ai.test       # Phase 6 tests only
+npm test -- --testPathPattern=gameMaster.test # Phase 8 tests only
 ```
+
+---
+
+## AI Game Master (Phase 8)
+
+The AI Game Master (GM) monitors game state and player messages, applying rules to intervene when players are stuck, make false accusations, or repeatedly claim/state the same thing.
+
+### Configuration
+
+Add the following environment variables to your `.env`:
+```env
+GM_MAX_CALLS_PER_MIN=5
+GM_BACKOFF_MS=5000
+```
+
+### Game Master Rules (Trigger Conditions)
+
+Interventions occur automatically during chat message processing under the following conditions:
+1. **Stuck Scenario:** 5+ minutes (`timeElapsed >= 300s`) have passed since mystery generation and no clues have been discovered.
+2. **False Accusation:** A player makes an accusation (`accuse`, `murderer is`, or `killer is`) pointing to a suspect who is not the true murderer.
+3. **Repeated Claims:** A player repeats the exact same claim or message 3 or more times recently.
+
+### Ollama Game Master Prompt Template
+
+```
+You are the AI Game Master (GM) for a multiplayer murder-mystery game.
+The game location is: "{location}".
+The victim is: "{victim.name}" ({victim.description}).
+The true killer/murderer is: "{crime.killer}".
+The suspects are: [...]
+
+An intervention rule has been triggered:
+Trigger Type: {stuck | false_accusation | repeated_claims}
+Reason: {reason}
+
+Recent chat messages from players:
+{messagesContext}
+
+As the Game Master, you must intervene to guide the players, resolve a false accusation, address repeated claims, or provide a hint/clue.
+Your response MUST be a single valid JSON object with the following structure:
+{
+  "actionType": "hint" | "event" | "clue",
+  "content": "The message or announcement from the Game Master to be shown to the players.",
+  "recipient": "all" | "username_of_player",
+  "payload": {
+    "clueName": "Optional name of the clue if actionType is clue",
+    "details": "Any optional extra details"
+  }
+}
+```
+
+### Socket.IO Events
+
+The following events are dispatched dynamically to room members when a GM intervention triggers:
+- `gm-action`: `{ roomCode, actionType, content, recipient, payload }`
+- `gm-hint` (if `actionType === 'hint'`): `{ roomCode, content, recipient, payload }`
+- `gm-event` (if `actionType === 'event'`): `{ roomCode, content, recipient, payload }`
+
+### GameState Extensions
+
+The Game Master logs all actions in the game state document:
+- `GameState.story.gmHistory[]`: Log of every generated action (`actionType`, `content`, `timestamp`).
+- `GameState.story.pendingActions[]`: Queue of actions to be processed (`actionType`, `payload`, `createdAt`).
+---
+
+## Investigation & Voting System (Phase 9)
+
+Phase 9 introduces the main gameplay loops where players can investigate clues, ask questions, inspect locations, accuse players, cast suspect votes, and transition the game state to final resolution.
+
+### API Endpoints
+
+All endpoints require `Authorization: Bearer <jwt>`.
+
+#### Investigation Endpoints
+- `POST /api/investigation/action`: Creates an action (`ASK_QUESTION`, `INSPECT_LOCATION`, `INSPECT_CLUE`, `ACCUSE_PLAYER`). Validated to ensure game is in `investigation` phase.
+- `GET /api/investigation/:roomId/history`: Retrieves full investigation history for the room.
+- `GET /api/investigation/:roomId/evidence`: Retrieves list of discovered clues vs all story clues.
+
+#### Voting Endpoints
+- `POST /api/vote`: Casts a vote for suspected murderer. Validated to ensure game is in `voting` phase.
+- `GET /api/vote/:roomId/results`: Calculates current round votes and returns the leader/tie results.
+- `POST /api/game/:roomId/start-voting`: Starts the voting phase (host only). Transition: `investigation` -> `voting`.
+- `POST /api/game/:roomId/end-voting`: Ends the voting phase, calculates result, and moves the game to `reveal` phase (host only).
+
+### Socket.IO Events
+The system emits real-time events to all sockets in the game room:
+- `investigation:action`: `{ roomId, playerId, actionType, target, message, metadata }`
+- `investigation:update`: `{ roomId, gameState }`
+- `clue:discovered` (if clue): `{ roomId, playerId, clue: target }`
+- `player:accused` (if accusation): `{ roomId, playerId, suspect: target }`
+- `state-changed`: `{ roomId, gameState }`
+- `phase-changed`: `{ roomId, phase, results? }`
+
+### Run Tests
+```bash
+npm test                                                 # run all 188 tests
+npm test -- --testPathPattern=investigationAndVoting.test # Phase 9 tests only
+npm test -- --testPathPattern=finalReveal.test            # Phase 10 tests only
+```
+
+---
+
+## Final Game Resolution & AI Reveal (Phase 10)
+
+Phase 10 introduces the game finalization loop where hosts finalize the game, calculate statistics, generate dynamic AI narrative wrap-up explanation, locks room from further actions, and broadcasts completion events.
+
+### API Endpoints
+
+All endpoints require `Authorization: Bearer <jwt>`.
+
+- `POST /api/game/:roomCode/finalize`: Finalizes the game. Resolves votes, calls Ollama LLM to explain why the murderer was caught/missed, locks the room, and broadcasts socket events. Only allowed for the host of the room.
+- `GET /api/game/:roomCode/final-reveal`: Gets the structured final reveal data (roomCode, winner status, chosen accused, actual murderer, explanation, narrative). Restricted to room members.
+- `GET /api/game/:roomCode/summary`: Gets game statistics summary (players count, votes cast, investigation actions count, correct verdict, duration). Restricted to room members.
+
+### Socket.IO Events
+The system emits real-time events to all sockets in the game room upon finalization:
+- `game:completed`: `{ roomId, summary }`
+- `game:finalReveal`: `{ roomId, finalReveal }`
+- `state-changed`: `{ roomId, gameState }`
 

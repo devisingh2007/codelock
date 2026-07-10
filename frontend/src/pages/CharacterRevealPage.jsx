@@ -21,12 +21,15 @@ const CharacterRevealPage = () => {
     return <div className={styles.loading}>Synchronizing Biometrics...</div>;
   }
 
+  const savedPlayerName = localStorage.getItem('playerName');
+  const displayName = savedPlayerName || character.name;
+
   return (
     <div className={styles.pageLayout}>
       <div className={styles.container}>
         <header className={styles.header}>
           <div className={`${styles.identifiedTag} font-mono`}>IDENTIFIED</div>
-          <h1 className={`${styles.name} font-serif`}>{character.name}</h1>
+          <h1 className={`${styles.name} font-serif`}>{displayName}</h1>
           <h2 className={`${styles.title} font-serif`}>"{character.title}"</h2>
         </header>
 

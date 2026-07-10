@@ -5,6 +5,7 @@ const { generateMystery } = require("../services/ai/mysteryGenerator");
 const { validateMystery } = require("../utils/mysteryValidator");
 const { io } = require("../sockets/gameSocket");
 const aiConfig = require("../config/ai");
+const { getLocationHints } = require("../config/scenarios");
 
 // ─── Per-room endpoint rate limiter ───────────────────────────────────────────
 // Uses a sliding-window (1 minute) approach stored in-memory.
@@ -59,7 +60,12 @@ const getMetrics = () => ({ ...metrics });
 const createRoom = async (req, res, next) => {
   try {
     const userId = req.user.id;
-    const room = await gameService.createRoom(userId);
+    const { scenario, difficulty, partySize } = req.body;
+    const room = await gameService.createRoom(userId, {
+      scenario,
+      difficulty,
+      maxPlayers: partySize ? parseInt(partySize, 10) : undefined,
+    });
     return res.status(200).json({ success: true, room });
   } catch (error) {
     next(error);
@@ -163,11 +169,20 @@ const generateMysteryForRoom = async (req, res, next) => {
     }
 
     // 2. Generate mystery via Ollama AI
-    console.log(`[GameController] Generating mystery for room ${roomCode} (${room.players.length} players)…`);
+    // Resolve locationHints: prefer explicit body value, then map scenario key → rich description
+    const scenarioKey = req.body?.scenario ?? "mansion";
+    const locationHints =
+      req.body?.locationHints ||
+      getLocationHints(scenarioKey);
+
+    console.log(
+      `[GameController] Generating mystery for room ${roomCode} ` +
+        `(${room.players.length} players) | scenario=${scenarioKey} | difficulty=${req.body?.difficulty ?? "medium"}`
+    );
     const mystery = await generateMystery({
       playersCount: Math.max(room.players.length, 2), // at least 2 suspects
       difficulty: req.body?.difficulty ?? "medium",
-      locationHints: req.body?.locationHints ?? "",
+      locationHints,
     });
 
     // 3. Validate (double-check — generator already validates, but be explicit)

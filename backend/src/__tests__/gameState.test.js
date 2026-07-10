@@ -101,7 +101,8 @@ beforeEach(async () => {
 // ═══════════════════════════════════════════════════════════════════════════════
 describe("stateUtils – helpers", () => {
   test("nextPhase advances through all phases in order", () => {
-    expect(nextPhase("lobby")).toBe("investigation");
+    expect(nextPhase("lobby")).toBe("roles-assigned");
+    expect(nextPhase("roles-assigned")).toBe("investigation");
     expect(nextPhase("investigation")).toBe("voting");
     expect(nextPhase("voting")).toBe("reveal");
   });
@@ -217,7 +218,7 @@ describe("gameStateService", () => {
       testRoomCode,
       hostUser._id.toString()
     );
-    expect(updated.phase).toBe("investigation");
+    expect(updated.phase).toBe("roles-assigned");
   });
 
   test("advancePhase throws InvalidPhaseTransitionError at reveal", async () => {
@@ -309,7 +310,7 @@ describe("Game State REST API", () => {
         .set("Authorization", `Bearer ${hostToken}`);
 
       expect(res.statusCode).toBe(200);
-      expect(res.body.data.phase).toBe("investigation");
+      expect(res.body.data.phase).toBe("roles-assigned");
     });
 
     test("returns 403 for non-host user", async () => {

@@ -45,6 +45,16 @@ const GameRoomSchema = new mongoose.Schema({
     default: 4,
     required: true,
   },
+  scenario: {
+    type: String,
+    enum: ["mansion", "cruise", "space", "palace", "cyber", "hotel"],
+    default: "mansion",
+  },
+  difficulty: {
+    type: String,
+    enum: ["Easy", "Medium", "Hard"],
+    default: "Medium",
+  },
   createdAt: {
     type: Date,
     default: Date.now,

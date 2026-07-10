@@ -6,6 +6,58 @@ import SuspicionMeter from '../components/SuspicionMeter';
 import { Copy, Plus, Send } from 'lucide-react';
 import styles from './LobbyPage.module.css';
 
+/* ─── Scenario themes matching host selection ───────────────────────────────── */
+const SCENARIO_THEMES = {
+  mansion: {
+    label: 'Classic Mansion',
+    emoji: '🏚️',
+    color: '#7c3aed',
+    gradient: 'linear-gradient(135deg, #130a2a 0%, #05070c 80%)',
+    bgGlyph: '🕯️',
+    tagline: 'Blackwood Hall'
+  },
+  cruise: {
+    label: 'Luxury Cruise',
+    emoji: '🛳️',
+    color: '#0369a1',
+    gradient: 'linear-gradient(135deg, #07172f 0%, #05070c 80%)',
+    bgGlyph: '🌊',
+    tagline: 'MV Obsidian Star'
+  },
+  space: {
+    label: 'Space Station',
+    emoji: '🛸',
+    color: '#0f766e',
+    gradient: 'linear-gradient(135deg, #031715 0%, #05070c 80%)',
+    bgGlyph: '🌌',
+    tagline: 'Helix Station Omega'
+  },
+  palace: {
+    label: 'Ancient Palace',
+    emoji: '🏛️',
+    color: '#b45309',
+    gradient: 'linear-gradient(135deg, #221000 0%, #05070c 80%)',
+    bgGlyph: '🪔',
+    tagline: 'Palace of Ashvapura'
+  },
+  cyber: {
+    label: 'Cyber Crime',
+    emoji: '💻',
+    color: '#dc2626',
+    gradient: 'linear-gradient(135deg, #1a0000 0%, #05070c 80%)',
+    bgGlyph: '⚡',
+    tagline: 'Nexus Corp SCIF'
+  },
+  hotel: {
+    label: 'Hotel Murder',
+    emoji: '🏨',
+    color: '#9f1239',
+    gradient: 'linear-gradient(135deg, #18000d 0%, #05070c 80%)',
+    bgGlyph: '🥂',
+    tagline: 'The Obsidian Grand'
+  }
+};
+
 const LobbyPage = () => {
   const { roomCode } = useParams();
   const navigate = useNavigate();
@@ -129,8 +181,11 @@ const LobbyPage = () => {
     setStarting(true);
     setError('');
     try {
-      // Host triggers the mystery generation
-      await generateMysteryForRoomCode(roomCode);
+      // Read the scenario and difficulty the host chose when creating the room
+      const scenario = localStorage.getItem('roomScenario') || 'mansion';
+      const difficulty = (localStorage.getItem('roomDifficulty') || 'medium').toLowerCase();
+      // Host triggers the mystery generation with the chosen scenario
+      await generateMysteryForRoomCode(roomCode, { scenario, difficulty });
     } catch (err) {
       console.error(err);
       setError(err.message || 'Failed to generate mystery. Check if Ollama is running.');
@@ -169,15 +224,33 @@ const LobbyPage = () => {
   const me = players.find(p => p.isMe);
   const isHost = me ? me.isHost : false;
 
+  const currentTheme = SCENARIO_THEMES[caseInfo.scenario] || SCENARIO_THEMES.mansion;
+
   return (
-    <div className={styles.container}>
+    <div 
+      className={styles.container} 
+      style={{ 
+        '--accent-color': currentTheme.color,
+        '--accent-glow': `${currentTheme.color}35`,
+        '--accent-hover': currentTheme.color,
+        background: currentTheme.gradient,
+        position: 'relative'
+      }}
+    >
+      {/* Dynamic Watermark Background Glyph */}
+      <div className={styles.bgGlyph}>{currentTheme.bgGlyph}</div>
+
       <main className={styles.mainContent}>
         {/* Left/Center Column */}
         <div className={styles.leftCol}>
           <div className={styles.headerRow}>
             <div>
-              <h1 className={`${styles.caseTitle} font-serif`}>{caseInfo.name}</h1>
-              <p className="text-muted font-mono">Case #{caseInfo.number} • Waiting for investigators...</p>
+              <h1 className={`${styles.caseTitle} font-serif`}>
+                <span className="mr-2">{currentTheme.emoji}</span> {caseInfo.name}
+              </h1>
+              <p className="text-muted font-mono">
+                Location: {currentTheme.tagline} • Waiting for investigators...
+              </p>
               {error && <div style={{ color: 'var(--accent-color)', fontFamily: 'monospace', marginTop: '10px' }}>{error}</div>}
             </div>
             <div className={styles.roomCodeBox}>
@@ -240,15 +313,17 @@ const LobbyPage = () => {
             
             <div className={styles.paramGroup}>
               <label className="font-mono text-muted">SCENARIO</label>
-              <div className={styles.paramValue}>{caseInfo.scenario}</div>
+              <div className={styles.paramValue}>
+                <span className="mr-2">{currentTheme.emoji}</span> {currentTheme.label}
+              </div>
             </div>
 
             <div className={styles.paramGroup}>
               <label className="font-mono text-muted">DIFFICULTY</label>
               <div className={styles.pills}>
-                <div className={`${styles.pill} ${caseInfo.difficulty === 'Easy' || caseInfo.difficulty === 'Novice' ? styles.pillActive : ''}`}>Easy</div>
-                <div className={`${styles.pill} ${caseInfo.difficulty === 'Medium' ? styles.pillActive : ''}`}>Medium</div>
-                <div className={`${styles.pill} ${caseInfo.difficulty === 'Hard' || caseInfo.difficulty === 'Master' ? styles.pillActive : ''}`}>Hard</div>
+                <div className={`${styles.pill} ${caseInfo.difficulty === 'Easy' || caseInfo.difficulty === 'Novice' ? styles.pillActive : ''}`} style={caseInfo.difficulty === 'Easy' ? { borderColor: currentTheme.color, color: currentTheme.color, backgroundColor: `${currentTheme.color}15` } : {}}>Easy</div>
+                <div className={`${styles.pill} ${caseInfo.difficulty === 'Medium' ? styles.pillActive : ''}`} style={caseInfo.difficulty === 'Medium' ? { borderColor: currentTheme.color, color: currentTheme.color, backgroundColor: `${currentTheme.color}15` } : {}}>Medium</div>
+                <div className={`${styles.pill} ${caseInfo.difficulty === 'Hard' || caseInfo.difficulty === 'Master' ? styles.pillActive : ''}`} style={caseInfo.difficulty === 'Hard' ? { borderColor: currentTheme.color, color: currentTheme.color, backgroundColor: `${currentTheme.color}15` } : {}}>Hard</div>
               </div>
             </div>
 
@@ -267,6 +342,7 @@ const LobbyPage = () => {
                 className={styles.startBtn} 
                 disabled={starting}
                 onClick={handleStartInvestigation}
+                style={{ backgroundColor: currentTheme.color, boxShadow: `0 0 20px ${currentTheme.color}60` }}
               >
                 {starting ? 'GENERATING MYSTERY...' : 'START INVESTIGATION'}
               </button>
