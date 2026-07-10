@@ -3,7 +3,7 @@ const express = require("express");
 const cors = require("cors");
 const mongoose = require("mongoose");
 const connectDB = require("./src/config/db");
-const authRoutes = require("./src/routes/auth");
+const authRoutes = require("./src/routes/authRoutes");
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -47,6 +47,8 @@ const startServer = async () => {
   process.on("SIGTERM", () => shutdown("SIGTERM"));
 };
 
-startServer();
+if (process.env.NODE_ENV !== "test") {
+  startServer();
+}
 
 module.exports = app; // Export for testing

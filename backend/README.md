@@ -61,3 +61,43 @@ To spin up the entire system including the MongoDB database:
 ```bash
 docker-compose up --build
 ```
+
+## Authentication API Usage
+
+The following endpoints are registered under `/api/auth`:
+
+### 1. User Registration
+* **Endpoint:** `POST /api/auth/register`
+* **Request Body:**
+  ```json
+  {
+    "username": "testuser",
+    "email": "test@example.com",
+    "password": "password123"
+  }
+  ```
+* **Response (201):** `{ "token": "jwt_token_here" }`
+
+### 2. User Login
+* **Endpoint:** `POST /api/auth/login`
+* **Request Body:**
+  ```json
+  {
+    "email": "test@example.com",
+    "password": "password123"
+  }
+  ```
+* **Response (200):** `{ "token": "jwt_token_here" }`
+
+### 3. User Profile (Protected)
+* **Endpoint:** `GET /api/auth/profile`
+* **Headers:** `Authorization: Bearer <jwt_token>`
+* **Response (200):**
+  ```json
+  {
+    "username": "testuser",
+    "email": "test@example.com",
+    "createdAt": "2026-07-10T05:51:00.000Z"
+  }
+  ```
+
