@@ -5,7 +5,7 @@ const STATE_TTL_SECONDS =
   parseInt(process.env.GAME_STATE_TTL_SECONDS, 10) || 7 * 24 * 60 * 60;
 
 /** Valid game phases in order */
-const PHASES = ["lobby", "investigation", "voting", "reveal"];
+const PHASES = ["lobby", "roles-assigned", "investigation", "voting", "reveal"];
 
 // ─── Phase 6 AI Mystery Sub-schemas ─────────────────────────────────────────
 
@@ -50,6 +50,24 @@ const SuspectSchema = new mongoose.Schema(
   { _id: false }
 );
 
+const GMHistoryEventSchema = new mongoose.Schema(
+  {
+    actionType: { type: String, required: true },
+    content: { type: String, required: true },
+    timestamp: { type: Date, default: Date.now },
+  },
+  { _id: false }
+);
+
+const PendingActionSchema = new mongoose.Schema(
+  {
+    actionType: { type: String, required: true },
+    payload: { type: mongoose.Schema.Types.Mixed, default: {} },
+    createdAt: { type: Date, default: Date.now },
+  },
+  { _id: false }
+);
+
 /**
  * Full AI-generated mystery story.
  * All fields are optional/defaulted for backward compatibility with
@@ -66,6 +84,9 @@ const StorySchema = new mongoose.Schema(
     clues: { type: [String], default: [] },
     /** ISO timestamp when the mystery was generated */
     generatedAt: { type: Date, default: null },
+    /** AI Game Master logs and pending queues */
+    gmHistory: { type: [GMHistoryEventSchema], default: [] },
+    pendingActions: { type: [PendingActionSchema], default: [] },
   },
   { _id: false }
 );
@@ -88,6 +109,29 @@ const EventLogSchema = new mongoose.Schema(
   {
     timestamp: { type: Date, default: Date.now },
     event: { type: String, required: true },
+  },
+  { _id: false }
+);
+
+// ─── Phase 7 AI Role Sub-schemas ─────────────────────────────────────────────
+
+const RoleSchema = new mongoose.Schema(
+  {
+    userId: { type: mongoose.Schema.Types.ObjectId, ref: "User", default: null },
+    roleName: { type: String, required: true, maxlength: 300 },
+    background: { type: String, required: true, maxlength: 300 },
+    objective: { type: String, required: true, maxlength: 300 },
+    secret: { type: String, required: true, maxlength: 300 },
+    clues: { type: [String], default: [] },
+  },
+  { _id: false }
+);
+
+const HistoryEventSchema = new mongoose.Schema(
+  {
+    action: { type: String, required: true },
+    by: { type: mongoose.Schema.Types.ObjectId, ref: "User", default: null },
+    timestamp: { type: Date, default: Date.now },
   },
   { _id: false }
 );
@@ -128,6 +172,30 @@ const GameStateSchema = new mongoose.Schema(
 
     /** Append-only log of significant events */
     eventsLog: { type: [EventLogSchema], default: [] },
+
+    /** Generated player/NPC roles (Phase 7) */
+    roles: {
+      type: [RoleSchema],
+      default: [],
+      validate: {
+        validator: function (v) {
+          const names = v.map((r) => r.roleName);
+          return names.length === new Set(names).size;
+        },
+        message: "Duplicate role names are not allowed.",
+      },
+    },
+
+    /** History of phase transitions and actions (Phase 7) */
+    history: { type: [HistoryEventSchema], default: [] },
+
+    /** Final resolution fields (Phase 10) */
+    finalVerdict: { type: String, default: null },
+    winner: { type: String, default: null },
+    completedAt: { type: Date, default: null },
+    finalReveal: { type: mongoose.Schema.Types.Mixed, default: null },
+    summary: { type: mongoose.Schema.Types.Mixed, default: null },
+    resolutionStatus: { type: String, default: null },
 
     /** Touched on every mutation – used for TTL */
     lastUpdated: {

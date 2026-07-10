@@ -34,7 +34,7 @@ const LobbyPage = () => {
     // 2. Connect Socket.IO
     const socket = connectSocket(roomCode, (event, payload) => {
       console.log(`[LobbyPage] Received event: ${event}`, payload);
-      
+
       if (event === 'joined-room') {
         if (payload.chatHistory) {
           const history = payload.chatHistory.map(h => ({
@@ -49,7 +49,7 @@ const LobbyPage = () => {
           ]);
         }
       }
-      
+
       else if (event === 'user-joined') {
         // Refresh players list
         fetchState();
@@ -58,7 +58,7 @@ const LobbyPage = () => {
           { id: `join-${Date.now()}`, sender: 'System', message: `${payload.username} has entered the room.` }
         ]);
       }
-      
+
       else if (event === 'user-left') {
         // Refresh players list
         fetchState();
@@ -67,7 +67,7 @@ const LobbyPage = () => {
           { id: `left-${Date.now()}`, sender: 'System', message: `${payload.username} has disconnected.` }
         ]);
       }
-      
+
       else if (event === 'room-message') {
         setChatMessages(prev => [
           ...prev,
@@ -79,7 +79,7 @@ const LobbyPage = () => {
           }
         ]);
       }
-      
+
       else if (event === 'mystery-generated') {
         setChatMessages(prev => [
           ...prev,
@@ -130,7 +130,18 @@ const LobbyPage = () => {
   }
 
   const { caseInfo, players } = roomState;
-  const me = players.find(p => p.isMe);
+
+  // Resolve the current player's display name from localStorage if available
+  const savedPlayerName = localStorage.getItem('username') || localStorage.getItem('playerName');
+  const mappedPlayers = players.map(p => {
+    if (p.isMe && savedPlayerName) {
+      const initials = savedPlayerName.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
+      return { ...p, name: savedPlayerName, initials };
+    }
+    return p;
+  });
+
+  const me = mappedPlayers.find(p => p.isMe);
   const isHost = me ? me.isHost : false;
 
   return (
@@ -156,7 +167,7 @@ const LobbyPage = () => {
           </div>
 
           <div className={styles.playersGrid}>
-            {players.map(p => <PlayerCard key={p.id} player={p} />)}
+            {mappedPlayers.map(p => <PlayerCard key={p.id} player={p} />)}
             <button className={styles.inviteCard} onClick={handleCopyCode}>
               <Plus size={24} className="mb-2" />
               <span>COPY ROOM CODE</span>
@@ -173,10 +184,10 @@ const LobbyPage = () => {
               ))}
             </div>
             <form className={styles.chatInputRow} onSubmit={handleSendChat}>
-              <input 
-                type="text" 
-                placeholder="Send message..." 
-                className={styles.chatInput} 
+              <input
+                type="text"
+                placeholder="Send message..."
+                className={styles.chatInput}
                 value={chatInput}
                 onChange={(e) => setChatInput(e.target.value)}
               />
@@ -189,7 +200,7 @@ const LobbyPage = () => {
         <div className={styles.rightCol}>
           <div className={`hud-card ${styles.paramsCard}`}>
             <h3 className="font-mono text-muted mb-4">CASE PARAMETERS</h3>
-            
+
             <div className={styles.paramGroup}>
               <label className="font-mono text-muted">SCENARIO</label>
               <div className={styles.paramValue}>{caseInfo.scenario}</div>
@@ -212,19 +223,19 @@ const LobbyPage = () => {
 
           <div className={styles.startContainer}>
             <div className={styles.playerCount}>
-              <span className="font-mono">{players.length}/8 PLAYERS READY</span>
+              <span className="font-mono">{mappedPlayers.length}/8 PLAYERS READY</span>
             </div>
             {isHost ? (
-              <button 
-                className={styles.startBtn} 
+              <button
+                className={styles.startBtn}
                 disabled={starting}
                 onClick={handleStartInvestigation}
               >
                 {starting ? 'GENERATING MYSTERY...' : 'START INVESTIGATION'}
               </button>
             ) : (
-              <button 
-                className={styles.startBtn} 
+              <button
+                className={styles.startBtn}
                 disabled
                 style={{ opacity: 0.6, cursor: 'not-allowed' }}
               >

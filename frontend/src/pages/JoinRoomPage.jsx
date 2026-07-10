@@ -44,24 +44,24 @@ const JoinRoomPage = () => {
           <form onSubmit={handleJoin} className={styles.form}>
             <div className={styles.inputGroup}>
               <label className="font-mono">PLAYER NAME</label>
-              <input 
-                type="text" 
+              <input
+                type="text"
                 value={playerName}
                 onChange={(e) => setPlayerName(e.target.value)}
-                placeholder="e.g. Detective Holmes" 
-                required 
+                placeholder="e.g. Detective Holmes"
+                required
               />
             </div>
             <div className={styles.inputGroup}>
               <label className="font-mono">ROOM CODE</label>
-              <input 
-                type="text" 
+              <input
+                type="text"
                 value={roomCode}
                 onChange={(e) => setRoomCode(e.target.value)}
-                placeholder="e.g. ALPHA-9" 
+                placeholder="e.g. ALPHA-9"
                 maxLength={8}
                 style={{ textTransform: 'uppercase' }}
-                required 
+                required
               />
             </div>
 

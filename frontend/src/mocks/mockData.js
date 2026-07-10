@@ -98,19 +98,23 @@ export const mockSuspects = [
 ];
 
 export const mockRevealData = {
-  killer: {
-    name: 'Beatrice Thorne',
-    motive: '"He threatened to ruin everything we built. I couldn\'t let him destroy me."'
-  },
+  success: true,
+  subtitle: "The Final Act at Blackwood Manor",
+  murdererName: 'Beatrice Thorne',
+  narrative: 'Beatrice Thorne slips cyanide into the brandy glass, driven by the motive: "He threatened to ruin everything we built. I couldn\'t let him destroy me."',
   victim: {
     name: 'Lord Reginald Vance',
     role: 'Patriarch',
     weapon: 'Cyanide-laced Brandy'
   },
   stats: {
+    votesCorrect: 2,
+    totalPlayers: 4,
+    evidenceFound: 2,
+    totalEvidence: 4,
+    timeTaken: '42m 18s',
     accuracy: 94,
-    rank: 'Master Detective',
-    timeToSolve: '42m 18s'
+    rank: 'Master Detective'
   },
   timelineOfTruth: [
     { time: '10:45 PM', event: 'Beatrice slips cyanide into the glass.' },

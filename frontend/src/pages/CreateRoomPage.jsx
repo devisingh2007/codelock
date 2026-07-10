@@ -6,11 +6,11 @@ import styles from './CreateRoomPage.module.css';
 
 const CreateRoomPage = () => {
   const navigate = useNavigate();
+  const [alias, setAlias] = useState('');
+  const [caseName, setCaseName] = useState('');
   const [difficulty, setDifficulty] = useState('Medium');
   const [partySize, setPartySize] = useState(6);
   const [theme, setTheme] = useState('mansion');
-  const [alias, setAlias] = useState('');
-  const [caseName, setCaseName] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -45,22 +45,22 @@ const CreateRoomPage = () => {
               <div className={styles.row}>
                 <div className={styles.inputGroup}>
                   <label className="font-mono">HOST NAME</label>
-                  <input 
-                    type="text" 
-                    placeholder="Enter your alias..." 
+                  <input
+                    type="text"
+                    placeholder="Enter your alias..."
                     value={alias}
                     onChange={(e) => setAlias(e.target.value)}
-                    required 
+                    required
                   />
                 </div>
                 <div className={styles.inputGroup}>
                   <label className="font-mono">CASE FILE NAME</label>
-                  <input 
-                    type="text" 
-                    placeholder="Case #404..." 
+                  <input
+                    type="text"
+                    placeholder="Case #404..."
                     value={caseName}
                     onChange={(e) => setCaseName(e.target.value)}
-                    required 
+                    required
                   />
                 </div>
               </div>
@@ -68,7 +68,7 @@ const CreateRoomPage = () => {
               <div className={styles.row}>
                 <div className={styles.inputGroup}>
                   <label className="font-mono">INVESTIGATION SETTING</label>
-                  <select 
+                  <select
                     value={theme}
                     onChange={(e) => setTheme(e.target.value)}
                     required
