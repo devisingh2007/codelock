@@ -323,3 +323,149 @@ node scripts/gameStateSeed.js
 
 Creates 4 sample rooms in all phases (lobby, investigation, voting, reveal).
 
+---
+
+## AI Mystery Generator (Phase 6)
+
+Phase 6 adds an Ollama-powered mystery generator that creates a complete murder-mystery scenario and broadcasts it to all room players via Socket.IO.
+
+### Prerequisites
+
+1. Install and start [Ollama](https://ollama.com/) locally:
+   ```bash
+   ollama serve
+   ollama pull llama3   # or mistral, gemma2, etc.
+   ```
+
+2. Add the following variables to your `.env` file:
+   ```env
+   OLLAMA_URL=http://localhost:11434
+   OLLAMA_MODEL=llama3
+   OLLAMA_API_KEY=          # leave empty for local Ollama (no auth required)
+   OLLAMA_RATE_LIMIT_PER_MIN=10
+   OLLAMA_TIMEOUT_MS=60000
+   OLLAMA_MAX_RETRIES=3
+   ```
+
+### Endpoint
+
+**`POST /api/game/:roomCode/generate-mystery`**
+
+| | |
+|---|---|
+| **Auth** | `Authorization: Bearer <host_jwt_token>` |
+| **Access** | Room host only |
+
+Optional request body:
+```json
+{
+  "difficulty": "easy | medium | hard",
+  "locationHints": "Victorian manor in Yorkshire"
+}
+```
+
+Successful response `200 OK`:
+```json
+{
+  "success": true,
+  "story": {
+    "title": "Death in the Manor",
+    "location": "Thornfield Estate, Yorkshire",
+    "victim": { "name": "Lord Aldric Vane", "description": "Wealthy landowner…" },
+    "crime": { "type": "poisoning", "weapon": "Arsenic", "summary": "…", "killer": "Dr. Helena Marsh" },
+    "suspects": [
+      { "name": "Dr. Helena Marsh", "background": "…", "relationshipToVictim": "…", "isMurderer": true },
+      { "name": "Edward Crane", "background": "…", "relationshipToVictim": "…", "isMurderer": false }
+    ],
+    "timeline": [
+      { "time": "18:00", "event": "Guests arrive at the manor" },
+      { "time": "21:00", "event": "Lord Vane collapses in the library" }
+    ],
+    "generatedAt": "2026-07-10T12:00:00.000Z"
+  }
+}
+```
+
+Error responses: `401` (no token), `403` (not host), `400` (invalid room code), `500` (AI failure).
+
+### Sample cURL
+
+```bash
+# 1. Login to get a token
+TOKEN=$(curl -s -X POST http://localhost:3000/api/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"email":"host@example.com","password":"password123"}' | jq -r .token)
+
+# 2. Generate a mystery for room AB12CD
+curl -X POST http://localhost:3000/api/game/AB12CD/generate-mystery \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"difficulty":"medium","locationHints":"Victorian manor in the English countryside"}'
+```
+
+### Ollama Prompt Template
+
+The exact prompt sent to the LLM:
+
+```
+Generate a murder mystery for 4 players (difficulty: medium). The setting is: Victorian manor.
+
+The output MUST be a single valid JSON object with EXACTLY these keys: "title", "location", "victim", "crime", "suspects", "timeline".
+Do NOT include any explanatory text, markdown, code fences, or any characters outside the JSON object.
+
+Required schema:
+{
+  "title": "A creative title for the mystery",
+  "location": "Specific location name and brief description",
+  "victim": {
+    "name": "Full name of the victim",
+    "description": "Short background about the victim"
+  },
+  "crime": {
+    "type": "Type of crime (e.g. poisoning, stabbing, strangulation)",
+    "weapon": "The murder weapon",
+    "summary": "Two to three sentences describing how the crime occurred",
+    "killer": "Full name of the murderer (must exactly match one suspect name)"
+  },
+  "suspects": [
+    {
+      "name": "Suspect full name",
+      "background": "Brief backstory",
+      "relationshipToVictim": "How they knew the victim",
+      "isMurderer": false
+    }
+  ],
+  "timeline": [
+    { "time": "HH:MM", "event": "What happened at this time" }
+  ]
+}
+
+Rules:
+- Provide EXACTLY 4 suspects.
+- Exactly ONE suspect must have "isMurderer": true; all others must have "isMurderer": false.
+- The "crime.killer" field must exactly match the "name" of the suspect where "isMurderer" is true.
+- The "timeline" must have at least 4 entries covering the evening of the murder.
+- Return ONLY the raw JSON object. No markdown, no code blocks, no extra text.
+```
+
+### Socket.IO Event
+
+After the mystery is generated, all sockets in the room receive:
+
+```json
+{
+  "event": "mystery-generated",
+  "payload": {
+    "roomCode": "AB12CD",
+    "story": { ... }
+  }
+}
+```
+
+### Run Tests
+
+```bash
+npm test                                    # run all 85 tests
+npm test -- --testPathPattern=ai.test       # Phase 6 tests only
+```
+
