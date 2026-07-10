@@ -3,7 +3,7 @@ const GameState = require("../models/GameState");
 const Vote = require("../models/Vote");
 const GameEvent = require("../models/GameEvent");
 const gameResolutionService = require("./gameResolutionService");
-const { io } = require("../sockets/gameSocket");
+const gameSocket = require("../sockets/gameSocket");
 
 /**
  * Casts a vote for a suspected murderer.
@@ -79,7 +79,7 @@ const castVote = async ({ roomId, voterId, accusedPlayerId }) => {
   });
 
   // 8. Emit state update via Socket.IO
-  io.to(code).emit("state-changed", {
+  gameSocket.io.to(code).emit("state-changed", {
     roomId: code,
     gameState,
   });
@@ -142,11 +142,11 @@ const startVoting = async (roomId, hostId) => {
   });
 
   // Emit Socket.IO phase change
-  io.to(code).emit("state-changed", {
+  gameSocket.io.to(code).emit("state-changed", {
     roomId: code,
     gameState,
   });
-  io.to(code).emit("phase-changed", {
+  gameSocket.io.to(code).emit("phase-changed", {
     roomId: code,
     phase: "voting",
   });
@@ -212,11 +212,11 @@ const endVoting = async (roomId, hostId) => {
   });
 
   // Emit Socket.IO phase change
-  io.to(code).emit("state-changed", {
+  gameSocket.io.to(code).emit("state-changed", {
     roomId: code,
     gameState,
   });
-  io.to(code).emit("phase-changed", {
+  gameSocket.io.to(code).emit("phase-changed", {
     roomId: code,
     phase: "reveal",
     results,

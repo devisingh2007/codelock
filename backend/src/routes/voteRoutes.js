@@ -30,7 +30,7 @@ const roomIdParamValidation = [
 
 // All routes require JWT authentication
 router.post(
-  "/",
+  "/vote",
   authMiddleware,
   voteValidation,
   validateGamePhase(["voting"]),
@@ -38,7 +38,7 @@ router.post(
 );
 
 router.get(
-  "/:roomId/results",
+  "/vote/:roomId/results",
   authMiddleware,
   roomIdParamValidation,
   getVotingResults

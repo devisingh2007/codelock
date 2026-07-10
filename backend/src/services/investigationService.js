@@ -2,7 +2,7 @@ const GameRoom = require("../models/GameRoom");
 const GameState = require("../models/GameState");
 const InvestigationAction = require("../models/InvestigationAction");
 const GameEvent = require("../models/GameEvent");
-const { io } = require("../sockets/gameSocket");
+const gameSocket = require("../sockets/gameSocket");
 
 /**
  * Handles creation of an investigation action.
@@ -93,7 +93,7 @@ const createAction = async ({ roomId, playerId, actionType, target, message, met
   // - investigation:update
   // - clue:discovered (if clue)
   // - player:accused (if accusation)
-  io.to(code).emit("investigation:action", {
+  gameSocket.io.to(code).emit("investigation:action", {
     roomId: code,
     playerId,
     actionType,
@@ -102,19 +102,19 @@ const createAction = async ({ roomId, playerId, actionType, target, message, met
     metadata,
   });
 
-  io.to(code).emit("investigation:update", {
+  gameSocket.io.to(code).emit("investigation:update", {
     roomId: code,
     gameState,
   });
 
   if (actionType === "INSPECT_CLUE") {
-    io.to(code).emit("clue:discovered", {
+    gameSocket.io.to(code).emit("clue:discovered", {
       roomId: code,
       playerId,
       clue: target,
     });
   } else if (actionType === "ACCUSE_PLAYER") {
-    io.to(code).emit("player:accused", {
+    gameSocket.io.to(code).emit("player:accused", {
       roomId: code,
       playerId,
       suspect: target,
