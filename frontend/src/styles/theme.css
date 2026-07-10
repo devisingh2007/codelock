@@ -1,22 +1,22 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Roboto+Mono:wght@400;500;700&display=swap');
 
 :root {
-  /* Colors - Codelock Theme */
-  --bg-color: #0a0e1a; /* deep navy/near-black */
-  --panel-bg: #131826; /* slightly lighter navy for cards */
-  --panel-border: #273043; /* muted blue-grey */
+  /* Colors - Crimson Theme aligned with Landing Page */
+  --bg-color: #05070c; /* near-black */
+  --panel-bg: #0d111d; /* deep dark grey-navy for cards */
+  --panel-border: rgba(255, 255, 255, 0.08); /* muted border */
   
   --text-primary: #f0f0f0;
   --text-secondary: #a0a5b1;
   --text-muted: #7b88a1;
   
-  --accent-color: #f2c14e; /* warm gold/amber */
-  --accent-hover: #d4a638;
-  --accent-glow: rgba(242, 193, 78, 0.3);
+  --accent-color: #b91c1c; /* crimson red */
+  --accent-hover: #991b1b;
+  --accent-glow: rgba(185, 28, 28, 0.4);
   
-  --danger-color: #c0392b; /* crimson */
-  --danger-hover: #962c21;
-  --danger-glow: rgba(192, 57, 43, 0.4);
+  --danger-color: #b91c1c; /* crimson red */
+  --danger-hover: #991b1b;
+  --danger-glow: rgba(185, 28, 28, 0.4);
   
   --success-color: #2ecc71; /* ready state dot */
 
