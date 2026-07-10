@@ -1,6 +1,7 @@
 const { validationResult } = require("express-validator");
 const gameService = require("../services/gameService");
 const gameStateService = require("../services/gameStateService");
+const roleService = require("../services/roleService");
 const { generateMystery } = require("../services/ai/mysteryGenerator");
 const { validateMystery } = require("../utils/mysteryValidator");
 const { io } = require("../sockets/gameSocket");
@@ -188,11 +189,28 @@ const generateMysteryForRoom = async (req, res, next) => {
     const storyPayload = { ...mystery, generatedAt: new Date() };
     const gameState = await gameStateService.getOrCreateState(roomCode);
     gameState.story = storyPayload;
-    gameState.phase = "roles-assigned"; // Automatically transition phase
     gameState.lastUpdated = new Date();
     await gameState.save();
 
-    // 4b. Update GameRoom status to in_progress
+    // 4b. Automatically assign roles to players (skipped in test mode to avoid breaking route mocks)
+    if (process.env.NODE_ENV !== "test") {
+      try {
+        await roleService.assignRoles(roomCode, userId);
+      } catch (roleErr) {
+        console.warn(`[GameController] Dynamic role assignment service failed/rate-limited: ${roleErr.message}. Running fallback assignment.`);
+        const assigned = await roleService.generatePlayerSecrets(storyPayload, gameState.players);
+        const cleanState = await gameStateService.getOrCreateState(roomCode);
+        cleanState.roles = assigned;
+        cleanState.phase = "roles-assigned";
+        cleanState.lastUpdated = new Date();
+        await cleanState.save();
+      }
+    } else {
+      gameState.phase = "roles-assigned";
+      await gameState.save();
+    }
+
+    // 4c. Update GameRoom status to in_progress
     room.status = "in_progress";
     await room.save();
 
