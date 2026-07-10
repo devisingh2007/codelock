@@ -283,8 +283,20 @@ export async function getEvidence(roomCode) {
       if (state && state.story && state.story.crime) {
         const weapon = state.story.crime.weapon;
         return [
-          { id: 'e1', name: weapon, status: 'revealed', icon: 'sample' },
-          { id: 'e2', name: 'Crime Summary', status: 'revealed', icon: 'document' },
+          { 
+            id: 'e1', 
+            name: weapon, 
+            status: 'revealed', 
+            icon: 'sample',
+            description: 'This appears to be the murder weapon. It was found near the scene of the crime. Perhaps the AI Game Master knows more about its origins?'
+          },
+          { 
+            id: 'e2', 
+            name: 'Crime Summary', 
+            status: 'revealed', 
+            icon: 'document',
+            description: 'A detailed report of the incident. The victim was found dead under mysterious circumstances. Time of death is estimated to be around midnight. Cause of death requires further investigation.'
+          },
           ...mockEvidenceLog.slice(2)
         ];
       }

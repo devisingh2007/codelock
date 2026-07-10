@@ -6,8 +6,15 @@ import BottomActionBar from '../components/BottomActionBar';
 import InvestigationFeed from '../components/InvestigationFeed';
 import PlayerCard from '../components/PlayerCard';
 import EvidenceCard from '../components/EvidenceCard';
-import { Settings, User, Clock, Shield } from 'lucide-react';
+import { Settings, User, Clock, Shield, FileText, Database, Fingerprint, Lock } from 'lucide-react';
 import styles from './GamePage.module.css';
+
+const iconMap = {
+  document: FileText,
+  sample: Database,
+  fingerprint: Fingerprint,
+  lock: Lock,
+};
 
 const GamePage = () => {
   const { roomCode } = useParams();
@@ -20,6 +27,7 @@ const GamePage = () => {
   const [timeline, setTimeline] = useState([]);
   const [activeTab, setActiveTab] = useState('evidence');
   const [chatInput, setChatInput] = useState('');
+  const [selectedEvidence, setSelectedEvidence] = useState(null);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -105,7 +113,13 @@ const GamePage = () => {
 
   const handleEvidenceClick = (ev) => {
     if (ev.status === 'locked') return;
-    setChatInput(`I want to inspect the ${ev.name}`);
+    setSelectedEvidence(ev);
+  };
+
+  const handleInspectAI = () => {
+    if (!selectedEvidence) return;
+    setChatInput(`I want to inspect the ${selectedEvidence.name}`);
+    setSelectedEvidence(null);
   };
 
   if (!roomState) return <div className={styles.loading}>Connecting to HUD...</div>;
@@ -255,6 +269,27 @@ const GamePage = () => {
 
         <BottomActionBar roomCode={roomCode} />
       </main>
+
+      {/* Evidence Modal */}
+      {selectedEvidence && (
+        <div className={styles.modalOverlay} onClick={() => setSelectedEvidence(null)}>
+          <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
+            <div className={styles.modalHeader}>
+              {React.createElement(iconMap[selectedEvidence.icon] || FileText, { size: 32, className: 'text-accent' })}
+              <h2 className="font-serif text-xl">{selectedEvidence.name}</h2>
+            </div>
+            
+            <div className={styles.modalDesc}>
+              {selectedEvidence.description || "No further details available. Ask the AI Game Master for more information."}
+            </div>
+
+            <div className={styles.modalActions}>
+              <button className={styles.modalCloseBtn} onClick={() => setSelectedEvidence(null)}>CLOSE</button>
+              <button className={styles.modalInspectBtn} onClick={handleInspectAI}>INSPECT VIA AI</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

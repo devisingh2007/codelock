@@ -73,10 +73,10 @@ export const mockFeedMessages = [
 ];
 
 export const mockEvidenceLog = [
-  { id: 'e1', name: 'Torn Velvet', status: 'revealed', icon: 'document' },
-  { id: 'e2', name: 'Shattered Glass', status: 'revealed', icon: 'sample' },
-  { id: 'e3', name: '???', status: 'locked', icon: 'lock' },
-  { id: 'e4', name: '???', status: 'locked', icon: 'lock' },
+  { id: 'e1', name: 'Torn Velvet', status: 'revealed', icon: 'document', description: 'A piece of torn velvet fabric that matches the drapes in the conservatory. Found snagged on a broken vase.' },
+  { id: 'e2', name: 'Shattered Glass', status: 'revealed', icon: 'sample', description: 'Remnants of a crystal brandy snifter. Trace amounts of a bitter-smelling substance were detected inside.' },
+  { id: 'e3', name: '???', status: 'locked', icon: 'lock', description: '' },
+  { id: 'e4', name: '???', status: 'locked', icon: 'lock', description: '' },
 ];
 
 export const mockObjectives = [
