@@ -6,7 +6,9 @@ const mongoose = require("mongoose");
 const connectDB = require("./src/config/db");
 const authRoutes = require("./src/routes/authRoutes");
 const gameRoutes = require("./src/routes/game");
+const gameStateRoutes = require("./src/routes/gameStateRoutes");
 const { initSocket } = require("./src/sockets/gameSocket");
+const gameStateSocket = require("./src/sockets/gameStateSocket");
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -21,6 +23,7 @@ app.use(express.json());
 // Routes
 app.use("/api/auth", authRoutes);
 app.use("/api/game", gameRoutes);
+app.use("/api/game", gameStateRoutes);
 
 // Health check endpoint
 app.get("/health", (req, res) => {
@@ -46,7 +49,8 @@ const startServer = async () => {
   await connectDB();
 
   // Initialise Socket.IO (only in non-test env)
-  initSocket(httpServer);
+  const io = initSocket(httpServer);
+  gameStateSocket(io);
 
   httpServer.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
