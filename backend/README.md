@@ -465,7 +465,72 @@ After the mystery is generated, all sockets in the room receive:
 ### Run Tests
 
 ```bash
-npm test                                    # run all 85 tests
+npm test                                    # run all 183 tests
 npm test -- --testPathPattern=ai.test       # Phase 6 tests only
+npm test -- --testPathPattern=gameMaster.test # Phase 8 tests only
 ```
+
+---
+
+## AI Game Master (Phase 8)
+
+The AI Game Master (GM) monitors game state and player messages, applying rules to intervene when players are stuck, make false accusations, or repeatedly claim/state the same thing.
+
+### Configuration
+
+Add the following environment variables to your `.env`:
+```env
+GM_MAX_CALLS_PER_MIN=5
+GM_BACKOFF_MS=5000
+```
+
+### Game Master Rules (Trigger Conditions)
+
+Interventions occur automatically during chat message processing under the following conditions:
+1. **Stuck Scenario:** 5+ minutes (`timeElapsed >= 300s`) have passed since mystery generation and no clues have been discovered.
+2. **False Accusation:** A player makes an accusation (`accuse`, `murderer is`, or `killer is`) pointing to a suspect who is not the true murderer.
+3. **Repeated Claims:** A player repeats the exact same claim or message 3 or more times recently.
+
+### Ollama Game Master Prompt Template
+
+```
+You are the AI Game Master (GM) for a multiplayer murder-mystery game.
+The game location is: "{location}".
+The victim is: "{victim.name}" ({victim.description}).
+The true killer/murderer is: "{crime.killer}".
+The suspects are: [...]
+
+An intervention rule has been triggered:
+Trigger Type: {stuck | false_accusation | repeated_claims}
+Reason: {reason}
+
+Recent chat messages from players:
+{messagesContext}
+
+As the Game Master, you must intervene to guide the players, resolve a false accusation, address repeated claims, or provide a hint/clue.
+Your response MUST be a single valid JSON object with the following structure:
+{
+  "actionType": "hint" | "event" | "clue",
+  "content": "The message or announcement from the Game Master to be shown to the players.",
+  "recipient": "all" | "username_of_player",
+  "payload": {
+    "clueName": "Optional name of the clue if actionType is clue",
+    "details": "Any optional extra details"
+  }
+}
+```
+
+### Socket.IO Events
+
+The following events are dispatched dynamically to room members when a GM intervention triggers:
+- `gm-action`: `{ roomCode, actionType, content, recipient, payload }`
+- `gm-hint` (if `actionType === 'hint'`): `{ roomCode, content, recipient, payload }`
+- `gm-event` (if `actionType === 'event'`): `{ roomCode, content, recipient, payload }`
+
+### GameState Extensions
+
+The Game Master logs all actions in the game state document:
+- `GameState.story.gmHistory[]`: Log of every generated action (`actionType`, `content`, `timestamp`).
+- `GameState.story.pendingActions[]`: Queue of actions to be processed (`actionType`, `payload`, `createdAt`).
+
 
