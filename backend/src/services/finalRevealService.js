@@ -65,9 +65,12 @@ Provide ONLY the raw JSON block without markdown code blocks.`;
 async function finalizeGame(roomCode, hostId) {
   const code = roomCode.toUpperCase();
 
+  console.log(`[FinalRevealService] Starting finalizeGame for room ${code} by host ${hostId}`);
+
   // 1. Load the room
   const room = await GameRoom.findOne({ roomCode: code });
   if (!room) {
+    console.log(`[FinalRevealService] Room ${code} not found`);
     const error = new Error("Room not found.");
     error.status = 404;
     throw error;
@@ -75,6 +78,7 @@ async function finalizeGame(roomCode, hostId) {
 
   // 2. Authorize host
   if (room.host.toString() !== hostId.toString()) {
+    console.log(`[FinalRevealService] Host mismatch. Room host: ${room.host}, caller: ${hostId}`);
     const error = new Error("Unauthorized: Only the host can finalize the game.");
     error.status = 403;
     throw error;
@@ -83,6 +87,7 @@ async function finalizeGame(roomCode, hostId) {
   // 3. Load GameState
   const gameState = await GameState.findOne({ roomId: code });
   if (!gameState) {
+    console.log(`[FinalRevealService] GameState for room ${code} not found`);
     const error = new Error("Game state not found.");
     error.status = 404;
     throw error;
@@ -90,14 +95,19 @@ async function finalizeGame(roomCode, hostId) {
 
   // 4. Verify not already completed
   if (room.status === "ended") {
+    console.log(`[FinalRevealService] Game already completed for room ${code}`);
     const error = new Error("Game already completed.");
     error.status = 400;
     throw error;
   }
 
+  console.log(`[FinalRevealService] Loaded game and state for room ${code}. Resolving votes...`);
+
   // 5. Load voting results
   const results = await gameResolutionService.resolveGame(code);
   const { accused, actualMurderer, correct, votes } = results;
+
+  console.log(`[FinalRevealService] Voting resolved. Accused: ${accused}, Killer: ${actualMurderer}`);
 
   // 6. Gather investigation details
   const investigationCount = await InvestigationAction.countDocuments({ roomId: code });
@@ -106,6 +116,7 @@ async function finalizeGame(roomCode, hostId) {
   const historyEvents = await GameEvent.find({ roomId: code }).sort({ timestamp: 1 });
 
   // 7. Call AI explanation
+  console.log(`[FinalRevealService] Requesting AI explanation...`);
   const aiResult = await generateFinalExplanation({
     story: gameState.story,
     accused,
@@ -114,6 +125,8 @@ async function finalizeGame(roomCode, hostId) {
     votes,
     discoveredClues,
   });
+
+  console.log(`[FinalRevealService] AI explanation received: ${JSON.stringify(aiResult)}`);
 
   // 8. Prepare finalReveal payload
   const finalReveal = {
