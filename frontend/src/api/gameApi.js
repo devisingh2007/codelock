@@ -224,10 +224,17 @@ export async function getMyCharacter(roomCode) {
         // Return character details based on story
         const currentUsername = localStorage.getItem('username');
         const suspects = data.state.story.suspects || [];
-        const mySuspect = suspects.find(s => s.name === currentUsername) || suspects[0] || {};
+        const roles = data.state.roles || [];
+        
+        // Find which character was assigned to the current player
+        const myRole = roles.find(r => r.userId?.username === currentUsername);
+        const mySuspect = myRole 
+          ? suspects.find(s => s.name === myRole.roleName)
+          : (suspects.find(s => s.name === currentUsername) || suspects[0] || {});
+
         return {
           playerId: 'p1',
-          name: mySuspect.name || currentUsername,
+          name: myRole ? myRole.roleName : (mySuspect.name || currentUsername),
           title: mySuspect.relationshipToVictim || 'Suspect',
           occupation: mySuspect.relationshipToVictim || 'Dignitary',
           objective: mySuspect.isMurderer ? 'You are the killer! Deflect suspicion and blame others.' : 'Find the real murderer among the suspects.',
@@ -318,14 +325,22 @@ export async function getSuspects(roomCode) {
       const data = await res.json();
       if (data.state && data.state.story && data.state.story.suspects) {
         const currentUsername = localStorage.getItem('username');
-        return data.state.story.suspects.map((s, idx) => ({
-          id: `s${idx}`,
-          name: s.name,
-          role: s.relationshipToVictim,
-          votes: s.isMurderer ? 2 : 0,
-          isMe: s.name === currentUsername,
-          suspicionLevel: s.isMurderer ? 80 : 30
-        }));
+        const roles = data.state.roles || [];
+        return data.state.story.suspects.map((s, idx) => {
+          const associatedRole = roles.find(r => r.roleName === s.name);
+          const playerUsername = associatedRole?.userId?.username;
+          // Append player name to suspect name if mapped
+          const displayName = playerUsername ? `${s.name} (${playerUsername})` : s.name;
+          const isMe = playerUsername === currentUsername;
+          return {
+            id: `s${idx}`,
+            name: displayName,
+            role: s.relationshipToVictim,
+            votes: s.isMurderer ? 2 : 0,
+            isMe: isMe,
+            suspicionLevel: s.isMurderer ? 80 : 30
+          };
+        });
       }
     }
   } catch (err) {
@@ -351,9 +366,13 @@ export async function getRevealData(roomCode) {
         const killerName = data.state.story.crime.killer;
         const victimName = data.state.story.victim.name;
         const weapon = data.state.story.crime.weapon;
+        const roles = data.state.roles || [];
+        const killerRole = roles.find(r => r.roleName === killerName);
+        const killerUsername = killerRole?.userId?.username;
+        const displayKillerName = killerUsername ? `${killerName} (${killerUsername})` : killerName;
         return {
           killer: {
-            name: killerName,
+            name: displayKillerName,
             motive: data.state.story.crime.summary || 'Hidden motive.'
           },
           victim: {

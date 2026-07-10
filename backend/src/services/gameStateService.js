@@ -25,7 +25,7 @@ const {
  * @returns {Promise<import('mongoose').Document>}
  */
 const findStateOrThrow = async (roomId, session) => {
-  const query = GameState.findOne({ roomId: roomId.toUpperCase() });
+  const query = GameState.findOne({ roomId: roomId.toUpperCase() }).populate("roles.userId", "username");
   if (session) query.session(session);
   const state = await query.exec();
   if (!state) {
@@ -47,10 +47,11 @@ const findStateOrThrow = async (roomId, session) => {
  */
 const getOrCreateState = async (roomId) => {
   const code = roomId.toUpperCase();
-  let state = await GameState.findOne({ roomId: code });
+  let state = await GameState.findOne({ roomId: code }).populate("roles.userId", "username");
 
   if (!state) {
     state = await GameState.create({ roomId: code });
+    state = await GameState.findOne({ roomId: code }).populate("roles.userId", "username");
     console.log(`[GameStateService] Created new state for room ${code}`);
   }
   return state;
