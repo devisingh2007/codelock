@@ -7,6 +7,8 @@ const connectDB = require("./src/config/db");
 const authRoutes = require("./src/routes/authRoutes");
 const gameRoutes = require("./src/routes/game");
 const gameStateRoutes = require("./src/routes/gameStateRoutes");
+const investigationRoutes = require("./src/routes/investigationRoutes");
+const voteRoutes = require("./src/routes/voteRoutes");
 const { initSocket } = require("./src/sockets/gameSocket");
 const gameStateSocket = require("./src/sockets/gameStateSocket");
 const roleSocket = require("./src/sockets/roleSocket");
@@ -26,6 +28,8 @@ app.use(express.json());
 app.use("/api/auth", authRoutes);
 app.use("/api/game", gameRoutes);
 app.use("/api/game", gameStateRoutes);
+app.use("/api/investigation", investigationRoutes);
+app.use("/api", voteRoutes);
 
 // Health check endpoint
 app.get("/health", (req, res) => {
