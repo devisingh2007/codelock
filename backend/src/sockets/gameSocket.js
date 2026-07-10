@@ -2,6 +2,7 @@ const { verifyToken } = require("../utils/jwt");
 const User = require("../models/User");
 const GameRoom = require("../models/GameRoom");
 const ChatMessage = require("../models/ChatMessage");
+const gameMasterService = require("../services/gameMasterService");
 
 // Module-level io instance (set when initSocket is called)
 let ioInstance = null;
@@ -220,6 +221,11 @@ const initSocket = (server) => {
           `[Socket] Message in ${roomCode} by ${user.username}: ${trimmed}`
         );
         if (callback) callback({ success: true, message: payload });
+
+        // Trigger AI Game Master rules processing
+        gameMasterService.processMessage(roomCode, payload).catch((err) => {
+          console.error("[Socket] gameMasterService.processMessage error:", err);
+        });
       } catch (err) {
         console.error("[Socket] room-message error:", err);
         if (callback) callback({ error: "Internal server error." });
