@@ -131,19 +131,21 @@ export const mockProfile = {
   stats: {
     casesSolved: 128,
     winRate: 76,
+    correctAccusations: 97,
+    playtime: '142h 38m',
     accuracyTrend: [60, 65, 70, 72, 85, 94]
   },
+  achievements: [
+    { name: 'First Blood', desc: 'Solved your first case.', unlocked: true },
+    { name: 'Master Sleuth', desc: 'Achieved a 90%+ accuracy rating.', unlocked: true },
+    { name: 'Flawless Victory', desc: 'Identify the murderer without any wrong guesses.', unlocked: false },
+    { name: 'Speedrunner', desc: 'Solve a case in under 20 minutes.', unlocked: false }
+  ],
   preferredAsset: {
     name: 'Eleanor Vance',
     quote: '"Money speaks, but silence is golden."',
     syncRate: 98
   },
-  accolades: [
-    { id: 'a1', title: 'First Blood', unlocked: true },
-    { id: 'a2', title: 'Master Sleuth', unlocked: true },
-    { id: 'a3', title: 'Flawless Victory', unlocked: false },
-    { id: 'a4', title: 'Speedrunner', unlocked: false }
-  ]
 };
 
 export const mockRoomState = {

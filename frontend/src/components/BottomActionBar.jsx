@@ -26,7 +26,7 @@ const BottomActionBar = ({ roomCode }) => {
 
       <button 
         className={`${styles.actionBtn} ${isActive('board') ? styles.active : ''}`}
-        onClick={() => navigate(`/game/${roomCode}/board`)}z
+        onClick={() => navigate(`/game/${roomCode}/board`)}
       >
         <div className={styles.iconWrapper}><Search size={20} /></div>
         <span>Search</span>

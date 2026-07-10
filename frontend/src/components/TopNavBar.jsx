@@ -1,10 +1,11 @@
 import React from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Settings, User } from 'lucide-react';
 import styles from './TopNavBar.module.css';
 
 const TopNavBar = () => {
   const location = useLocation();
+  const navigate = useNavigate();
   const path = location.pathname;
 
   const handleNavigation = (e) => {
@@ -28,7 +29,7 @@ const TopNavBar = () => {
       </div>
 
       <div className={styles.right}>
-        <button className={styles.iconBtn}><Settings size={20} /></button>
+        <button className={styles.iconBtn} onClick={() => navigate('/settings')}><Settings size={20} /></button>
         <Link to="/profile" onClick={handleNavigation} className={styles.iconBtn}><User size={20} /></Link>
       </div>
     </nav>
