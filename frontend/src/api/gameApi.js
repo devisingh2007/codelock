@@ -220,11 +220,12 @@ export async function getMyCharacter(roomCode) {
     });
     if (res.ok) {
       const data = await res.json();
-      if (data.state && data.state.story && data.state.story.victim) {
+      const state = data.data || data.state;
+      if (state && state.story && state.story.victim) {
         // Return character details based on story
         const currentUsername = localStorage.getItem('username');
-        const suspects = data.state.story.suspects || [];
-        const roles = data.state.roles || [];
+        const suspects = state.story.suspects || [];
+        const roles = state.roles || [];
         
         // Find which character was assigned to the current player
         const myRole = roles.find(r => r.userId?.username === currentUsername);
@@ -275,8 +276,9 @@ export async function getEvidence(roomCode) {
     });
     if (res.ok) {
       const data = await res.json();
-      if (data.state && data.state.story && data.state.story.crime) {
-        const weapon = data.state.story.crime.weapon;
+      const state = data.data || data.state;
+      if (state && state.story && state.story.crime) {
+        const weapon = state.story.crime.weapon;
         return [
           { id: 'e1', name: weapon, status: 'revealed', icon: 'sample' },
           { id: 'e2', name: 'Crime Summary', status: 'revealed', icon: 'document' },
@@ -302,8 +304,9 @@ export async function getTimeline(roomCode) {
     });
     if (res.ok) {
       const data = await res.json();
-      if (data.state && data.state.story && data.state.story.timeline) {
-        return data.state.story.timeline.map(t => ({
+      const state = data.data || data.state;
+      if (state && state.story && state.story.timeline) {
+        return state.story.timeline.map(t => ({
           date: t.time,
           event: t.event
         }));
@@ -323,10 +326,11 @@ export async function getSuspects(roomCode) {
     });
     if (res.ok) {
       const data = await res.json();
-      if (data.state && data.state.story && data.state.story.suspects) {
+      const state = data.data || data.state;
+      if (state && state.story && state.story.suspects) {
         const currentUsername = localStorage.getItem('username');
-        const roles = data.state.roles || [];
-        return data.state.story.suspects.map((s, idx) => {
+        const roles = state.roles || [];
+        return state.story.suspects.map((s, idx) => {
           const associatedRole = roles.find(r => r.roleName === s.name);
           const playerUsername = associatedRole?.userId?.username;
           // Append player name to suspect name if mapped
@@ -362,18 +366,19 @@ export async function getRevealData(roomCode) {
     });
     if (res.ok) {
       const data = await res.json();
-      if (data.state && data.state.story && data.state.story.crime) {
-        const killerName = data.state.story.crime.killer;
-        const victimName = data.state.story.victim.name;
-        const weapon = data.state.story.crime.weapon;
-        const roles = data.state.roles || [];
+      const state = data.data || data.state;
+      if (state && state.story && state.story.crime) {
+        const killerName = state.story.crime.killer;
+        const victimName = state.story.victim.name;
+        const weapon = state.story.crime.weapon;
+        const roles = state.roles || [];
         const killerRole = roles.find(r => r.roleName === killerName);
         const killerUsername = killerRole?.userId?.username;
         const displayKillerName = killerUsername ? `${killerName} (${killerUsername})` : killerName;
         return {
           killer: {
             name: displayKillerName,
-            motive: data.state.story.crime.summary || 'Hidden motive.'
+            motive: state.story.crime.summary || 'Hidden motive.'
           },
           victim: {
             name: victimName,
@@ -385,7 +390,7 @@ export async function getRevealData(roomCode) {
             rank: 'Master Detective',
             timeToSolve: '15m 00s'
           },
-          timelineOfTruth: data.state.story.timeline.map(t => ({
+          timelineOfTruth: state.story.timeline.map(t => ({
             time: t.time,
             event: t.event
           }))
