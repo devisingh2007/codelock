@@ -4,6 +4,7 @@ const cors = require("cors");
 const mongoose = require("mongoose");
 const connectDB = require("./src/config/db");
 const authRoutes = require("./src/routes/authRoutes");
+const gameRoutes = require("./src/routes/game");
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -14,10 +15,18 @@ app.use(express.json());
 
 // Routes
 app.use("/api/auth", authRoutes);
+app.use("/api/game", gameRoutes);
 
 // Health check endpoint
 app.get("/health", (req, res) => {
   res.status(200).json({ status: "UP", database: mongoose.connection.readyState === 1 ? "CONNECTED" : "DISCONNECTED" });
+});
+
+// Centralized error handler
+app.use((err, req, res, next) => {
+  const status = err.status || 500;
+  console.error("Centralized Error Handler:", err);
+  res.status(status).json({ error: err.message || "Internal server error" });
 });
 
 // Database and Server Start
