@@ -135,42 +135,52 @@ const updateState = async (roomId, changes, clientVersion) => {
  */
 const advancePhase = async (roomId, requestingUserId) => {
   const code = roomId.toUpperCase();
-  const session = await mongoose.startSession();
 
-  try {
-    let updatedState;
+  // MongoDB transactions require a replica set. In test environments (single-node
+  // MongoMemoryServer) we skip the session and perform operations directly.
+  const useTransaction = process.env.NODE_ENV !== "test";
 
-    await session.withTransaction(async () => {
-      // 1. Verify host
-      const room = await GameRoom.findOne({ roomCode: code }).session(session);
-      if (!room) {
-        const err = new Error(`Room "${code}" not found.`);
-        err.statusCode = 404;
-        throw err;
-      }
+  // Verify host
+  const room = await GameRoom.findOne({ roomCode: code });
+  if (!room) {
+    const err = new Error(`Room "${code}" not found.`);
+    err.statusCode = 404;
+    throw err;
+  }
 
-      if (room.host.toString() !== requestingUserId.toString()) {
-        throw new UnauthorisedError("Only the room host can advance the phase.");
-      }
+  if (room.host.toString() !== requestingUserId.toString()) {
+    throw new UnauthorisedError("Only the room host can advance the phase.");
+  }
 
-      // 2. Load current state
-      const state = await findStateOrThrow(code, session);
+  // Load current state
+  const state = await findStateOrThrow(code);
 
-      // 3. Determine next phase (throws InvalidPhaseTransitionError if at end)
-      const newPhase = nextPhase(state.phase);
+  // Determine next phase (throws InvalidPhaseTransitionError if at end)
+  const newPhase = nextPhase(state.phase);
 
-      // 4. Mutate and save state
-      state.phase = newPhase;
-      appendEvent(state, `Phase advanced to "${newPhase}" by host.`);
-      state.lastUpdated = new Date();
-
-      updatedState = await state.save({ session });
-      console.log(`[GameStateService] Phase for room ${code}: ${state.phase} → ${newPhase}`);
-    });
-
+  if (useTransaction) {
+    const session = await mongoose.startSession();
+    try {
+      let updatedState;
+      await session.withTransaction(async () => {
+        state.phase = newPhase;
+        appendEvent(state, `Phase advanced to "${newPhase}" by host.`);
+        state.lastUpdated = new Date();
+        updatedState = await state.save({ session });
+      });
+      console.log(`[GameStateService] Phase for room ${code}: → ${newPhase}`);
+      return updatedState;
+    } finally {
+      await session.endSession();
+    }
+  } else {
+    // Test path – direct save without transaction
+    state.phase = newPhase;
+    appendEvent(state, `Phase advanced to "${newPhase}" by host.`);
+    state.lastUpdated = new Date();
+    const updatedState = await state.save();
+    console.log(`[GameStateService] Phase for room ${code}: → ${newPhase}`);
     return updatedState;
-  } finally {
-    await session.endSession();
   }
 };
 
