@@ -238,18 +238,6 @@ const LobbyPage = () => {
               </div>
             </div>
 
-            <div className={styles.statsList}>
-              <SuspicionMeter 
-                level={selectedDifficulty === 'easy' ? 30 : selectedDifficulty === 'medium' ? 60 : 90} 
-                label="SUSPENSE LEVEL" 
-                variant="text" 
-              />
-              <SuspicionMeter 
-                level={selectedDifficulty === 'easy' ? 20 : selectedDifficulty === 'medium' ? 50 : 85} 
-                label="AI ACTIVITY" 
-                variant="text" 
-              />
-            </div>
           </div>
 
           <div className={styles.startContainer}>
