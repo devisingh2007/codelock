@@ -5,7 +5,7 @@ const STATE_TTL_SECONDS =
   parseInt(process.env.GAME_STATE_TTL_SECONDS, 10) || 7 * 24 * 60 * 60;
 
 /** Valid game phases in order */
-const PHASES = ["lobby", "investigation", "voting", "reveal"];
+const PHASES = ["lobby", "roles-assigned", "investigation", "voting", "reveal"];
 
 // ─── Phase 6 AI Mystery Sub-schemas ─────────────────────────────────────────
 
@@ -92,6 +92,29 @@ const EventLogSchema = new mongoose.Schema(
   { _id: false }
 );
 
+// ─── Phase 7 AI Role Sub-schemas ─────────────────────────────────────────────
+
+const RoleSchema = new mongoose.Schema(
+  {
+    userId: { type: mongoose.Schema.Types.ObjectId, ref: "User", default: null },
+    roleName: { type: String, required: true, maxlength: 300 },
+    background: { type: String, required: true, maxlength: 300 },
+    objective: { type: String, required: true, maxlength: 300 },
+    secret: { type: String, required: true, maxlength: 300 },
+    clues: { type: [String], default: [] },
+  },
+  { _id: false }
+);
+
+const HistoryEventSchema = new mongoose.Schema(
+  {
+    action: { type: String, required: true },
+    by: { type: mongoose.Schema.Types.ObjectId, ref: "User", default: null },
+    timestamp: { type: Date, default: Date.now },
+  },
+  { _id: false }
+);
+
 // ─── Main Schema ──────────────────────────────────────────────────────────────
 
 /**
@@ -128,6 +151,22 @@ const GameStateSchema = new mongoose.Schema(
 
     /** Append-only log of significant events */
     eventsLog: { type: [EventLogSchema], default: [] },
+
+    /** Generated player/NPC roles (Phase 7) */
+    roles: {
+      type: [RoleSchema],
+      default: [],
+      validate: {
+        validator: function (v) {
+          const names = v.map((r) => r.roleName);
+          return names.length === new Set(names).size;
+        },
+        message: "Duplicate role names are not allowed.",
+      },
+    },
+
+    /** History of phase transitions and actions (Phase 7) */
+    history: { type: [HistoryEventSchema], default: [] },
 
     /** Touched on every mutation – used for TTL */
     lastUpdated: {

@@ -9,6 +9,8 @@ const gameRoutes = require("./src/routes/game");
 const gameStateRoutes = require("./src/routes/gameStateRoutes");
 const { initSocket } = require("./src/sockets/gameSocket");
 const gameStateSocket = require("./src/sockets/gameStateSocket");
+const roleSocket = require("./src/sockets/roleSocket");
+
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -51,6 +53,7 @@ const startServer = async () => {
   // Initialise Socket.IO (only in non-test env)
   const io = initSocket(httpServer);
   gameStateSocket(io);
+  roleSocket(io);
 
   httpServer.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);

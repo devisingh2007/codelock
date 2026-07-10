@@ -39,6 +39,9 @@ const aiConfig = {
 
   /** Maximum number of retry attempts on failure */
   maxRetries: parseInt(process.env.OLLAMA_MAX_RETRIES, 10) || 3,
+
+  /** Role assignment rate limit in seconds per room */
+  roleAssignRateLimit: parseInt(process.env.ROLE_ASSIGN_RATE_LIMIT, 10) || 60,
 };
 
 module.exports = aiConfig;
