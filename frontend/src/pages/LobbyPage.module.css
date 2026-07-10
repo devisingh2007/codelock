@@ -1,0 +1,256 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  font-size: 1.25rem;
+  color: var(--text-secondary);
+  font-family: var(--font-mono);
+  letter-spacing: 0.1em;
+}
+
+.mainContent {
+  display: flex;
+  flex: 1;
+  padding: var(--spacing-xl);
+  gap: var(--spacing-2xl);
+  max-width: 1400px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.leftCol {
+  flex: 2;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xl);
+}
+
+.rightCol {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xl);
+}
+
+.headerRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.caseTitle {
+  font-size: 3rem;
+  color: var(--accent-color);
+  margin-bottom: var(--spacing-xs);
+}
+
+.roomCodeBox {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+
+.codeRow {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  background-color: var(--panel-bg);
+  border: 1px solid var(--panel-border);
+  padding: var(--spacing-xs) var(--spacing-sm);
+  border-radius: var(--border-radius-sm);
+  margin-top: 4px;
+}
+
+.code {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  letter-spacing: 0.1em;
+}
+
+.copyBtn {
+  color: var(--text-secondary);
+}
+.copyBtn:hover {
+  color: var(--text-primary);
+}
+
+.playersGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: var(--spacing-md);
+}
+
+.inviteCard {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border: 1px dashed var(--panel-border);
+  border-radius: var(--border-radius-md);
+  padding: var(--spacing-lg);
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  transition: all 0.2s;
+  background-color: rgba(255, 255, 255, 0.02);
+}
+
+.inviteCard:hover {
+  border-color: var(--accent-color);
+  color: var(--accent-color);
+  background-color: rgba(242, 193, 78, 0.05);
+}
+
+.chatPanel {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 250px;
+}
+
+.chatScroll {
+  flex: 1;
+  overflow-y: auto;
+  margin-bottom: var(--spacing-md);
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+}
+
+.chatMsg {
+  font-size: 0.95rem;
+}
+
+.chatInputRow {
+  display: flex;
+  gap: var(--spacing-sm);
+}
+
+.chatInput {
+  flex: 1;
+  background-color: var(--bg-color);
+  border: 1px solid var(--panel-border);
+  color: var(--text-primary);
+  padding: var(--spacing-sm) var(--spacing-md);
+  border-radius: var(--border-radius-sm);
+  font-family: var(--font-sans);
+}
+
+.chatInput:focus {
+  outline: none;
+  border-color: var(--accent-color);
+}
+
+.sendBtn {
+  background-color: var(--panel-border);
+  color: var(--text-primary);
+  padding: 0 var(--spacing-md);
+  border-radius: var(--border-radius-sm);
+}
+
+.sendBtn:hover {
+  background-color: var(--accent-color);
+  color: #000;
+}
+
+.paramsCard {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-lg);
+}
+
+.paramGroup {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+}
+
+.paramValue {
+  font-size: 1.1rem;
+  color: var(--text-primary);
+  padding: var(--spacing-sm);
+  background-color: var(--bg-color);
+  border: 1px solid var(--panel-border);
+  border-radius: var(--border-radius-sm);
+}
+
+.pills {
+  display: flex;
+  gap: var(--spacing-sm);
+}
+
+.pill {
+  flex: 1;
+  text-align: center;
+  padding: var(--spacing-sm);
+  background-color: var(--bg-color);
+  border: 1px solid var(--panel-border);
+  border-radius: var(--border-radius-sm);
+  color: var(--text-muted);
+}
+
+.pillActive {
+  background-color: rgba(242, 193, 78, 0.1);
+  border-color: var(--accent-color);
+  color: var(--accent-color);
+}
+
+.statsList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+  border-top: 1px solid var(--panel-border);
+  padding-top: var(--spacing-md);
+}
+
+.statRow {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+}
+
+.startContainer {
+  margin-top: auto;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+}
+
+.playerCount {
+  text-align: center;
+  color: var(--text-secondary);
+}
+
+.startBtn {
+  width: 100%;
+  background-color: var(--accent-color);
+  color: #000;
+  padding: var(--spacing-lg);
+  font-family: var(--font-mono);
+  font-weight: 700;
+  font-size: 1.2rem;
+  letter-spacing: 0.05em;
+  border-radius: var(--border-radius-md);
+  box-shadow: 0 0 20px var(--accent-glow);
+  transition: all 0.2s;
+}
+
+.startBtn:hover {
+  background-color: var(--accent-hover);
+  box-shadow: 0 0 30px var(--accent-glow);
+}
+
+.hostNote {
+  text-align: center;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
