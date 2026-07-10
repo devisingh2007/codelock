@@ -1,6 +1,7 @@
 const express = require("express");
 const { body, param } = require("express-validator");
 const { createRoom, joinRoom, getRoom, deleteRoom, generateMysteryForRoom } = require("../controllers/gameController");
+const { finalizeGame, getFinalReveal, getSummary } = require("../controllers/finalRevealController");
 const authMiddleware = require("../middleware/authMiddleware");
 
 const router = express.Router();
@@ -36,6 +37,28 @@ router.post(
   authMiddleware,
   roomCodeParamValidation,
   generateMysteryForRoom
+);
+
+// Phase 10: Final Reveal, Summary & Game Completion Routes
+router.post(
+  "/:roomCode/finalize",
+  authMiddleware,
+  roomCodeParamValidation,
+  finalizeGame
+);
+
+router.get(
+  "/:roomCode/final-reveal",
+  authMiddleware,
+  roomCodeParamValidation,
+  getFinalReveal
+);
+
+router.get(
+  "/:roomCode/summary",
+  authMiddleware,
+  roomCodeParamValidation,
+  getSummary
 );
 
 module.exports = router;
