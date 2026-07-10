@@ -11,6 +11,7 @@ const JoinRoomPage = () => {
   const handleJoin = (e) => {
     e.preventDefault();
     if (playerName.trim() && roomCode.trim()) {
+      localStorage.setItem('playerName', playerName.trim());
       navigate(`/lobby/${roomCode.toUpperCase()}`);
     }
   };

@@ -31,23 +31,25 @@ const InvestigationFeed = ({ messages }) => {
             {msg.content}
           </div>
         );
+      case 'player':
       case 'question':
       case 'accusation':
         return (
           <div key={msg.id} className={`${styles.message} ${msg.type === 'accusation' ? styles.accusation : styles.question}`}>
             <div className={styles.header}>
-              <span className={styles.playerName}>{msg.playerName}</span>
-              <span className={`${styles.time} font-mono`}>{msg.timestamp}</span>
+              <span className={styles.playerName}>{msg.playerName || msg.sender}</span>
+              <span className={`${styles.time} font-mono`}>{msg.timestamp || msg.time}</span>
             </div>
             <div className={styles.content}>{msg.content}</div>
           </div>
         );
+      case 'gm':
       case 'answer':
         return (
           <div key={msg.id} className={`${styles.message} ${styles.gmMessage}`}>
             <div className={styles.header}>
-              <span className={`${styles.gmName} font-mono`}>GAME MASTER</span>
-              <span className={`${styles.time} font-mono`}>{msg.timestamp}</span>
+              <span className={`${styles.gmName} font-mono`}>{msg.sender || 'GAME MASTER'}</span>
+              <span className={`${styles.time} font-mono`}>{msg.timestamp || msg.time}</span>
             </div>
             <div className={styles.content}>{msg.content}</div>
           </div>
@@ -73,21 +75,6 @@ const InvestigationFeed = ({ messages }) => {
       <div className={styles.feed}>
         {messages.map(renderMessage)}
         <div ref={feedEndRef} />
-      </div>
-      
-      <div className={styles.inputArea}>
-        <div className={styles.statusLabel}>
-          <span className={styles.dot}></span>
-          <span className="font-mono">AI ANALYSIS READY</span>
-        </div>
-        <div className={styles.inputWrapper}>
-          <input 
-            type="text" 
-            placeholder="Ask a question or present evidence..." 
-            className={styles.input}
-          />
-          <button className={styles.sendBtn}>SEND</button>
-        </div>
       </div>
     </div>
   );

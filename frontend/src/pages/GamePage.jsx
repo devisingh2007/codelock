@@ -62,6 +62,14 @@ const GamePage = () => {
   if (!roomState) return <div className={styles.loading}>Connecting to HUD...</div>;
 
   const { caseInfo, players } = roomState;
+  const savedPlayerName = localStorage.getItem('playerName');
+  const mappedPlayers = players.map(p => {
+    if (p.isMe && savedPlayerName) {
+      const initials = savedPlayerName.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
+      return { ...p, name: savedPlayerName, initials };
+    }
+    return p;
+  });
 
   return (
     <div className={styles.pageLayout}>
@@ -70,7 +78,7 @@ const GamePage = () => {
           <div className="font-mono text-muted text-xs">CASE #{caseInfo.number} PERSONNEL</div>
         </div>
         <div className={styles.playerList}>
-          {players.map(p => <PlayerCard key={p.id} player={p} />)}
+          {mappedPlayers.map(p => <PlayerCard key={p.id} player={p} />)}
         </div>
         <div className={styles.sidebarFooter}>
           <button className={styles.commsBtn}>COMMS SETTINGS</button>

@@ -5,6 +5,7 @@ import styles from './CreateRoomPage.module.css';
 
 const CreateRoomPage = () => {
   const navigate = useNavigate();
+  const [alias, setAlias] = useState('');
   const [difficulty, setDifficulty] = useState('Medium');
   const [partySize, setPartySize] = useState(4);
   const [theme, setTheme] = useState('mansion');
@@ -26,6 +27,9 @@ const CreateRoomPage = () => {
 
   const handleCreate = (e) => {
     e.preventDefault();
+    if (alias.trim()) {
+      localStorage.setItem('playerName', alias.trim());
+    }
     navigate('/lobby/NX-4209');
   };
 
@@ -44,7 +48,13 @@ const CreateRoomPage = () => {
             <div className={styles.row}>
               <div className={styles.inputGroup}>
                 <label className="font-mono">DETECTIVE ALIAS</label>
-                <input type="text" placeholder="e.g. Inspector Holmes" required />
+                <input 
+                  type="text" 
+                  placeholder="e.g. Inspector Holmes" 
+                  value={alias}
+                  onChange={(e) => setAlias(e.target.value)}
+                  required 
+                />
               </div>
               <div className={styles.inputGroup}>
                 <label className="font-mono">CASE FILE NAME</label>

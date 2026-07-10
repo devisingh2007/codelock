@@ -25,6 +25,14 @@ const LobbyPage = () => {
   }
 
   const { caseInfo, players } = roomState;
+  const savedPlayerName = localStorage.getItem('playerName');
+  const mappedPlayers = players.map(p => {
+    if (p.isMe && savedPlayerName) {
+      const initials = savedPlayerName.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
+      return { ...p, name: savedPlayerName, initials };
+    }
+    return p;
+  });
 
   return (
     <div className={styles.container}>
@@ -48,7 +56,7 @@ const LobbyPage = () => {
           </div>
 
           <div className={styles.playersGrid}>
-            {players.map(p => <PlayerCard key={p.id} player={p} />)}
+            {mappedPlayers.map(p => <PlayerCard key={p.id} player={p} />)}
             <button className={styles.inviteCard}>
               <Plus size={24} className="mb-2" />
               <span>INVITE FRIEND</span>
@@ -98,7 +106,7 @@ const LobbyPage = () => {
 
           <div className={styles.startContainer}>
             <div className={styles.playerCount}>
-              <span className="font-mono">{players.length}/8 PLAYERS READY</span>
+              <span className="font-mono">{mappedPlayers.length}/8 PLAYERS READY</span>
             </div>
             <button 
               className={styles.startBtn} 
