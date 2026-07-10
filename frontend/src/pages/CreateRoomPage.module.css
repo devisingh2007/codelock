@@ -21,19 +21,13 @@
   background-color: #05070c;
 }
 
-/* Custom Scrollbar for form container */
+/* Hide scrollbar completely */
 .formContainer::-webkit-scrollbar {
-  width: 6px;
+  display: none;
 }
-.formContainer::-webkit-scrollbar-track {
-  background: #05070c; 
-}
-.formContainer::-webkit-scrollbar-thumb {
-  background: #1f2937; 
-  border-radius: 4px;
-}
-.formContainer::-webkit-scrollbar-thumb:hover {
-  background: #374151; 
+.formContainer {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
 }
 
 .formWrapper {
