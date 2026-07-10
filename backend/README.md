@@ -532,5 +532,38 @@ The following events are dispatched dynamically to room members when a GM interv
 The Game Master logs all actions in the game state document:
 - `GameState.story.gmHistory[]`: Log of every generated action (`actionType`, `content`, `timestamp`).
 - `GameState.story.pendingActions[]`: Queue of actions to be processed (`actionType`, `payload`, `createdAt`).
+---
 
+## Investigation & Voting System (Phase 9)
 
+Phase 9 introduces the main gameplay loops where players can investigate clues, ask questions, inspect locations, accuse players, cast suspect votes, and transition the game state to final resolution.
+
+### API Endpoints
+
+All endpoints require `Authorization: Bearer <jwt>`.
+
+#### Investigation Endpoints
+- `POST /api/investigation/action`: Creates an action (`ASK_QUESTION`, `INSPECT_LOCATION`, `INSPECT_CLUE`, `ACCUSE_PLAYER`). Validated to ensure game is in `investigation` phase.
+- `GET /api/investigation/:roomId/history`: Retrieves full investigation history for the room.
+- `GET /api/investigation/:roomId/evidence`: Retrieves list of discovered clues vs all story clues.
+
+#### Voting Endpoints
+- `POST /api/vote`: Casts a vote for suspected murderer. Validated to ensure game is in `voting` phase.
+- `GET /api/vote/:roomId/results`: Calculates current round votes and returns the leader/tie results.
+- `POST /api/game/:roomId/start-voting`: Starts the voting phase (host only). Transition: `investigation` -> `voting`.
+- `POST /api/game/:roomId/end-voting`: Ends the voting phase, calculates result, and moves the game to `reveal` phase (host only).
+
+### Socket.IO Events
+The system emits real-time events to all sockets in the game room:
+- `investigation:action`: `{ roomId, playerId, actionType, target, message, metadata }`
+- `investigation:update`: `{ roomId, gameState }`
+- `clue:discovered` (if clue): `{ roomId, playerId, clue: target }`
+- `player:accused` (if accusation): `{ roomId, playerId, suspect: target }`
+- `state-changed`: `{ roomId, gameState }`
+- `phase-changed`: `{ roomId, phase, results? }`
+
+### Run Tests
+```bash
+npm test                                                 # run all 187 tests
+npm test -- --testPathPattern=investigationAndVoting.test # Phase 9 tests only
+```
