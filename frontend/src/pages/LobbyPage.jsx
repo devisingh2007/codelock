@@ -122,12 +122,11 @@ const LobbyPage = () => {
     setError('');
     try {
       const theme = localStorage.getItem('theme') || 'mansion';
-      const caseName = localStorage.getItem('caseName') || 'Case File';
       
       // Host triggers the mystery generation with case settings
       await generateMysteryForRoomCode(roomCode, {
         difficulty: selectedDifficulty,
-        locationHints: `Theme: ${theme}. Case Name: ${caseName}`
+        locationHints: `Theme: ${theme}`
       });
     } catch (err) {
       console.error(err);
@@ -240,8 +239,16 @@ const LobbyPage = () => {
             </div>
 
             <div className={styles.statsList}>
-              <SuspicionMeter level={85} label="SUSPENSE LEVEL" variant="text" />
-              <SuspicionMeter level={30} label="AI ACTIVITY" variant="text" />
+              <SuspicionMeter 
+                level={selectedDifficulty === 'easy' ? 30 : selectedDifficulty === 'medium' ? 60 : 90} 
+                label="SUSPENSE LEVEL" 
+                variant="text" 
+              />
+              <SuspicionMeter 
+                level={selectedDifficulty === 'easy' ? 20 : selectedDifficulty === 'medium' ? 50 : 85} 
+                label="AI ACTIVITY" 
+                variant="text" 
+              />
             </div>
           </div>
 

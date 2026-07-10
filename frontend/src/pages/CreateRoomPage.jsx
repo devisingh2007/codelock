@@ -7,7 +7,6 @@ import styles from './CreateRoomPage.module.css';
 const CreateRoomPage = () => {
   const navigate = useNavigate();
   const [alias, setAlias] = useState('');
-  const [caseName, setCaseName] = useState('');
   const [difficulty, setDifficulty] = useState('Medium');
   const [partySize, setPartySize] = useState(6);
   const [theme, setTheme] = useState('mansion');
@@ -25,7 +24,6 @@ const CreateRoomPage = () => {
       // Store case configuration for mystery generator
       localStorage.setItem('difficulty', difficulty.toLowerCase());
       localStorage.setItem('theme', theme);
-      localStorage.setItem('caseName', caseName);
       
       navigate(`/lobby/${room.roomCode}`);
     } catch (err) {
@@ -48,27 +46,15 @@ const CreateRoomPage = () => {
             </div>
 
             <form onSubmit={handleCreate} className={styles.form}>
-              <div className={styles.row}>
-                <div className={styles.inputGroup}>
-                  <label className="font-mono">HOST NAME</label>
-                  <input
-                    type="text"
-                    placeholder="Enter your alias..."
-                    value={alias}
-                    onChange={(e) => setAlias(e.target.value)}
-                    required
-                  />
-                </div>
-                <div className={styles.inputGroup}>
-                  <label className="font-mono">CASE FILE NAME</label>
-                  <input
-                    type="text"
-                    placeholder="Case #404..."
-                    value={caseName}
-                    onChange={(e) => setCaseName(e.target.value)}
-                    required
-                  />
-                </div>
+              <div className={styles.inputGroup}>
+                <label className="font-mono">HOST NAME</label>
+                <input
+                  type="text"
+                  placeholder="Enter your alias..."
+                  value={alias}
+                  onChange={(e) => setAlias(e.target.value)}
+                  required
+                />
               </div>
 
               <div className={styles.row}>
