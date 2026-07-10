@@ -247,3 +247,79 @@ Each socket is rate-limited to **10 messages per 5 seconds**. Exceeding this ret
 
 All messages sent via `room-message` are persisted to MongoDB (`ChatMessage` collection) and auto-deleted after **24 hours** via a TTL index. When a client joins a room, the last **20 messages** are returned in the `join-room` acknowledgement.
 
+---
+
+## Game State Engine (Phase 5)
+
+The Game State Engine is the **authoritative server-side state** for each multiplayer mystery room. It combines REST APIs and real-time Socket.IO synchronisation.
+
+### REST Endpoints
+
+All endpoints require `Authorization: Bearer <jwt>`.
+
+| Method | URL | Description |
+|--------|-----|-------------|
+| `GET` | `/api/game/:roomId/state` | Get (or auto-create) GameState |
+| `POST` | `/api/game/:roomId/state/update` | Apply versioned partial update |
+| `POST` | `/api/game/:roomId/state/advancePhase` | Advance phase (host only) |
+| `POST` | `/api/game/:roomId/state/restore` | Re-sync state from DB |
+
+#### Update body format
+
+```json
+{
+  "changes": {
+    "story": { "victim": "Lord Blackwell", "location": "Library" },
+    "eventsLog": [{ "event": "First clue found" }]
+  },
+  "version": 3
+}
+```
+
+Returns `409 Conflict` if `version` does not match the current `__v` in the database.
+
+### Game Phases
+
+Phases advance in order: **lobby → investigation → voting → reveal**
+
+Only the room host can call `advancePhase`. Once at `reveal`, no further advancement is possible.
+
+### Socket.IO Game State Events
+
+#### Client → Server
+
+| Event | Payload | Description |
+|---|---|---|
+| `join-game-room` | `{ roomId }` | Join state room; receive `sync-state` |
+| `leave-game-room` | `{ roomId }` | Leave state room |
+| `state-update` | `{ roomId, changes, version }` | Versioned state update |
+| `request-advance-phase` | `{ roomId }` | Host requests phase advance |
+| `request-sync` | `{ roomId }` | Force re-sync from DB |
+
+#### Server → Client
+
+| Event | Payload | Description |
+|---|---|---|
+| `sync-state` | `{ state }` | Full state on join or restore |
+| `state-changed` | `{ state }` | Broadcast after any mutation |
+| `phase-advanced` | `{ state }` | Broadcast after phase advance |
+| `state-error` | `{ error, code? }` | Error notification |
+
+Error codes: `VERSION_CONFLICT` (409), `UNAUTHORISED` (403), `FINAL_PHASE` (400).
+
+### Optimistic Concurrency
+
+Every state document has a `__v` field (Mongoose version key). When calling `state/update` or `state-update` socket event, always include the current `version` value. If another update happened in between, the server returns a `409 Conflict` – re-fetch state and retry.
+
+### Data Auto-Expiry (TTL)
+
+`GameState` documents are automatically deleted from MongoDB after **7 days** of inactivity (configurable via `GAME_STATE_TTL_SECONDS` environment variable).
+
+### Seed Game States
+
+```bash
+node scripts/gameStateSeed.js
+```
+
+Creates 4 sample rooms in all phases (lobby, investigation, voting, reveal).
+
