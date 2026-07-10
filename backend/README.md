@@ -101,3 +101,93 @@ The following endpoints are registered under `/api/auth`:
   }
   ```
 
+## Game Room Endpoints
+
+The following endpoints are registered under `/api/game`:
+
+### 1. Create Room (Protected)
+* **Endpoint:** `POST /api/game/create`
+* **Headers:** `Authorization: Bearer <jwt_token>`
+* **Body:** `{}` (None required)
+* **Response (200):**
+  ```json
+  {
+    "success": true,
+    "room": {
+      "roomCode": "AB12CD",
+      "host": "userId1",
+      "players": ["userId1"],
+      "status": "waiting",
+      "maxPlayers": 4,
+      "createdAt": "2026-07-10T06:00:00.000Z"
+    }
+  }
+  ```
+
+### 2. Join Room (Protected)
+* **Endpoint:** `POST /api/game/join`
+* **Headers:** `Authorization: Bearer <jwt_token>`
+* **Body:**
+  ```json
+  {
+    "roomCode": "AB12CD"
+  }
+  ```
+* **Response (200):**
+  ```json
+  {
+    "success": true,
+    "room": {
+      "roomCode": "AB12CD",
+      "host": "userId1",
+      "players": ["userId1", "userId2"],
+      "status": "waiting",
+      "maxPlayers": 4,
+      "createdAt": "2026-07-10T06:00:00.000Z"
+    }
+  }
+  ```
+
+### 3. Fetch Room Details (Protected)
+* **Endpoint:** `GET /api/game/:roomCode`
+* **Headers:** `Authorization: Bearer <jwt_token>`
+* **Response (200):**
+  ```json
+  {
+    "success": true,
+    "room": {
+      "roomCode": "AB12CD",
+      "host": "userId1",
+      "players": [
+        {
+          "_id": "userId1",
+          "username": "hostUser",
+          "email": "host@example.com"
+        }
+      ],
+      "status": "waiting",
+      "maxPlayers": 4,
+      "createdAt": "2026-07-10T06:00:00.000Z"
+    }
+  }
+  ```
+
+### 4. Delete Room (Protected, Host Only)
+* **Endpoint:** `DELETE /api/game/:roomCode`
+* **Headers:** `Authorization: Bearer <jwt_token>`
+* **Response (200):**
+  ```json
+  {
+    "success": true
+  }
+  ```
+
+## Seeding Sample Game Rooms
+
+To populate your database with dummy rooms and users for local testing:
+
+```bash
+node scripts/seedRooms.js
+```
+
+
