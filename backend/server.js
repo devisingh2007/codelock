@@ -1,16 +1,21 @@
 require("dotenv").config();
+const http = require("http");
 const express = require("express");
 const cors = require("cors");
 const mongoose = require("mongoose");
 const connectDB = require("./src/config/db");
 const authRoutes = require("./src/routes/authRoutes");
 const gameRoutes = require("./src/routes/game");
+const { initSocket } = require("./src/sockets/gameSocket");
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
 // Middleware
-app.use(cors());
+app.use(cors({
+  origin: process.env.CLIENT_ORIGIN || "*",
+  credentials: true,
+}));
 app.use(express.json());
 
 // Routes
@@ -19,7 +24,11 @@ app.use("/api/game", gameRoutes);
 
 // Health check endpoint
 app.get("/health", (req, res) => {
-  res.status(200).json({ status: "UP", database: mongoose.connection.readyState === 1 ? "CONNECTED" : "DISCONNECTED" });
+  res.status(200).json({
+    status: "UP",
+    database:
+      mongoose.connection.readyState === 1 ? "CONNECTED" : "DISCONNECTED",
+  });
 });
 
 // Centralized error handler
@@ -29,24 +38,35 @@ app.use((err, req, res, next) => {
   res.status(status).json({ error: err.message || "Internal server error" });
 });
 
+// Create HTTP server so Socket.IO can share it
+const httpServer = http.createServer(app);
+
 // Database and Server Start
 const startServer = async () => {
   await connectDB();
-  const server = app.listen(PORT, () => {
+
+  // Initialise Socket.IO (only in non-test env)
+  initSocket(httpServer);
+
+  httpServer.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
+    console.log(`Socket.IO listening on ws://localhost:${PORT}`);
   });
 
   // Graceful shutdown handling
   const shutdown = async (signal) => {
     console.log(`Received ${signal}. Shutting down gracefully...`);
-    server.close(async () => {
+    httpServer.close(async () => {
       console.log("HTTP server closed.");
       try {
         await mongoose.connection.close();
         console.log("Database connection closed.");
         process.exit(0);
       } catch (err) {
-        console.error("Error closing database connection during shutdown:", err);
+        console.error(
+          "Error closing database connection during shutdown:",
+          err
+        );
         process.exit(1);
       }
     });
@@ -60,4 +80,4 @@ if (process.env.NODE_ENV !== "test") {
   startServer();
 }
 
-module.exports = app; // Export for testing
+module.exports = { app, httpServer }; // Export both for testing

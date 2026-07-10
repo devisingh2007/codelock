@@ -1,7 +1,7 @@
 const request = require("supertest");
 const mongoose = require("mongoose");
 const bcrypt = require("bcrypt");
-const app = require("../server");
+const { app } = require("../server");
 const User = require("../src/models/User");
 const { signToken } = require("../src/utils/jwt");
 
