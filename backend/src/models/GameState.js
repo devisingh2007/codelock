@@ -1,26 +1,42 @@
 const mongoose = require("mongoose");
 
 const GameStateSchema = new mongoose.Schema({
-  gameRoom: {
+  roomId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "GameRoom",
     required: true,
   },
-  status: {
-    type: String,
-    enum: ["waiting", "active", "completed"],
-    default: "waiting",
-  },
-  currentTurn: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "User",
-  },
-  stateData: {
-    type: Map,
-    of: String,
+  story: {
+    type: mongoose.Schema.Types.Mixed,
     default: {},
   },
-  updatedAt: {
+  playersState: [
+    {
+      playerId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
+        required: true,
+      },
+      role: {
+        type: String,
+        default: "",
+      },
+      secret: {
+        type: String,
+        default: "",
+      },
+      clues: [
+        {
+          type: String,
+        },
+      ],
+    },
+  ],
+  currentPhase: {
+    type: String,
+    default: "lobby",
+  },
+  createdAt: {
     type: Date,
     default: Date.now,
   },
