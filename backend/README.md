@@ -564,6 +564,28 @@ The system emits real-time events to all sockets in the game room:
 
 ### Run Tests
 ```bash
-npm test                                                 # run all 187 tests
+npm test                                                 # run all 188 tests
 npm test -- --testPathPattern=investigationAndVoting.test # Phase 9 tests only
+npm test -- --testPathPattern=finalReveal.test            # Phase 10 tests only
 ```
+
+---
+
+## Final Game Resolution & AI Reveal (Phase 10)
+
+Phase 10 introduces the game finalization loop where hosts finalize the game, calculate statistics, generate dynamic AI narrative wrap-up explanation, locks room from further actions, and broadcasts completion events.
+
+### API Endpoints
+
+All endpoints require `Authorization: Bearer <jwt>`.
+
+- `POST /api/game/:roomCode/finalize`: Finalizes the game. Resolves votes, calls Ollama LLM to explain why the murderer was caught/missed, locks the room, and broadcasts socket events. Only allowed for the host of the room.
+- `GET /api/game/:roomCode/final-reveal`: Gets the structured final reveal data (roomCode, winner status, chosen accused, actual murderer, explanation, narrative). Restricted to room members.
+- `GET /api/game/:roomCode/summary`: Gets game statistics summary (players count, votes cast, investigation actions count, correct verdict, duration). Restricted to room members.
+
+### Socket.IO Events
+The system emits real-time events to all sockets in the game room upon finalization:
+- `game:completed`: `{ roomId, summary }`
+- `game:finalReveal`: `{ roomId, finalReveal }`
+- `state-changed`: `{ roomId, gameState }`
+
