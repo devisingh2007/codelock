@@ -1,0 +1,125 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Roboto+Mono:wght@400;500;700&display=swap');
+
+:root {
+  /* Colors - Codelock Theme */
+  --bg-color: #0a0e1a; /* deep navy/near-black */
+  --panel-bg: #131826; /* slightly lighter navy for cards */
+  --panel-border: #273043; /* muted blue-grey */
+  
+  --text-primary: #f0f0f0;
+  --text-secondary: #a0a5b1;
+  --text-muted: #7b88a1;
+  
+  --accent-color: #f2c14e; /* warm gold/amber */
+  --accent-hover: #d4a638;
+  --accent-glow: rgba(242, 193, 78, 0.3);
+  
+  --danger-color: #c0392b; /* crimson */
+  --danger-hover: #962c21;
+  --danger-glow: rgba(192, 57, 43, 0.4);
+  
+  --success-color: #2ecc71; /* ready state dot */
+
+  /* Typography */
+  --font-sans: 'Inter', sans-serif;
+  --font-serif: 'Playfair Display', serif; /* logo, headers, quotes */
+  --font-mono: 'Roboto Mono', monospace; /* HUD labels, timestamps, tags */
+
+  /* Spacing */
+  --spacing-xs: 0.25rem;
+  --spacing-sm: 0.5rem;
+  --spacing-md: 1rem;
+  --spacing-lg: 1.5rem;
+  --spacing-xl: 2rem;
+  --spacing-2xl: 3rem;
+  --spacing-3xl: 4rem;
+
+  /* Borders & Shadows */
+  --border-radius-sm: 4px;
+  --border-radius-md: 8px;
+  --border-radius-lg: 12px;
+  
+  --shadow-sm: 0 1px 2px rgba(0,0,0,0.5);
+  --shadow-md: 0 4px 6px rgba(0,0,0,0.5);
+  --shadow-glow: 0 0 15px var(--accent-glow);
+  --shadow-glow-danger: 0 0 15px var(--danger-glow);
+}
+
+body.high-contrast {
+  --bg-color: #000000;
+  --panel-bg: #111111;
+  --text-primary: #ffffff;
+  --text-secondary: #eeeeee;
+  --text-muted: #aaaaaa;
+  --accent-color: #ffd700;
+  --accent-hover: #ffea00;
+  --accent-glow: rgba(255, 215, 0, 0.8);
+  --panel-border: #ffffff;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: var(--font-sans);
+  background-color: var(--bg-color);
+  color: var(--text-primary);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Typography Classes */
+.font-serif {
+  font-family: var(--font-serif);
+}
+.font-sans {
+  font-family: var(--font-sans);
+}
+.font-mono {
+  font-family: var(--font-mono);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* Layout Utilities */
+.container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: var(--spacing-lg);
+}
+
+/* Shared Button Reset */
+button {
+  font-family: var(--font-sans);
+  border: none;
+  background: none;
+  cursor: pointer;
+  color: inherit;
+}
+
+/* Common Text Utilities */
+.text-danger { color: var(--danger-color); }
+.text-accent { color: var(--accent-color); }
+.text-muted { color: var(--text-muted); }
+
+/* Common Card Style */
+.hud-card {
+  background-color: var(--panel-bg);
+  border: 1px solid var(--panel-border);
+  border-radius: var(--border-radius-lg);
+  padding: var(--spacing-lg);
+  box-shadow: var(--shadow-sm);
+}
+
+/* Glowing text */
+.glow-danger {
+  color: var(--danger-color);
+  text-shadow: 0 0 10px var(--danger-glow);
+}
+.glow-accent {
+  color: var(--accent-color);
+  text-shadow: 0 0 10px var(--accent-glow);
+}

@@ -1,0 +1,203 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.hero {
+  position: relative;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  border-bottom: 1px solid var(--panel-border);
+}
+
+.heroOverlay {
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: radial-gradient(circle at center, rgba(10, 14, 26, 0.4) 0%, var(--bg-color) 80%),
+              url('https://images.unsplash.com/photo-1519074069444-1ba4fff66d16?auto=format&fit=crop&q=80&w=2000') center/cover;
+  z-index: 0;
+  opacity: 0.6;
+}
+
+.heroContent {
+  position: relative;
+  z-index: 1;
+  text-align: center;
+  max-width: 800px;
+  padding: var(--spacing-xl);
+}
+
+.hudTopLeft {
+  position: absolute;
+  top: 0;
+  left: 0;
+  text-align: left;
+  font-size: 0.75rem;
+}
+
+.hudBottomRight {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  text-align: right;
+  font-size: 0.75rem;
+}
+
+.logoWordmark {
+  font-size: 4.5rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  margin-bottom: var(--spacing-md);
+  text-transform: uppercase;
+}
+
+.tagline {
+  font-size: 1.5rem;
+  color: var(--text-primary);
+  margin-bottom: var(--spacing-sm);
+  font-weight: 600;
+}
+
+.subtext {
+  font-size: 1.1rem;
+  color: var(--text-secondary);
+  margin-bottom: var(--spacing-2xl);
+  line-height: 1.6;
+}
+
+.actionGroup {
+  display: flex;
+  justify-content: center;
+  gap: var(--spacing-md);
+  margin-bottom: var(--spacing-lg);
+}
+
+.primaryBtn, .dangerBtn, .ghostBtn {
+  padding: var(--spacing-md) var(--spacing-xl);
+  border-radius: var(--border-radius-sm);
+  font-weight: 700;
+  font-family: var(--font-mono);
+  letter-spacing: 0.05em;
+  transition: all 0.2s;
+}
+
+.primaryBtn {
+  background-color: var(--accent-color);
+  color: #000;
+  box-shadow: 0 0 15px rgba(242, 193, 78, 0.2);
+}
+.primaryBtn:hover {
+  background-color: var(--accent-hover);
+  box-shadow: 0 0 20px var(--accent-glow);
+}
+
+.dangerBtn {
+  background-color: transparent;
+  border: 1px solid var(--danger-color);
+  color: var(--danger-color);
+}
+.dangerBtn:hover {
+  background-color: var(--danger-glow);
+  color: #fff;
+}
+
+.ghostBtn {
+  background-color: transparent;
+  color: var(--text-muted);
+  border: 1px dashed var(--text-muted);
+}
+.ghostBtn:hover {
+  color: var(--text-primary);
+  border-color: var(--text-primary);
+}
+
+.sectionTitle {
+  text-align: center;
+  color: var(--text-muted);
+  margin-bottom: var(--spacing-2xl);
+  letter-spacing: 0.2em;
+}
+
+.features, .protocol, .cta {
+  padding: var(--spacing-3xl) var(--spacing-xl);
+  max-width: 1200px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.featureGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--spacing-lg);
+}
+
+.featureGrid h4 {
+  font-size: 1.25rem;
+  margin-bottom: var(--spacing-sm);
+}
+
+.protocolSteps {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--spacing-md);
+}
+
+.step {
+  flex: 1;
+  text-align: left;
+  border-left: 2px solid var(--panel-border);
+  padding-left: var(--spacing-md);
+}
+
+.stepNum {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background-color: var(--panel-bg);
+  border: 1px solid var(--accent-color);
+  color: var(--accent-color);
+  margin-bottom: var(--spacing-sm);
+  font-weight: 700;
+}
+
+.step h4 {
+  margin-bottom: var(--spacing-xs);
+}
+
+.footer {
+  border-top: 1px solid var(--panel-border);
+  padding: var(--spacing-xl);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: var(--text-muted);
+}
+
+.footerLinks {
+  display: flex;
+  gap: var(--spacing-lg);
+}
+
+.footerLinks a {
+  color: inherit;
+  text-decoration: none;
+  font-size: 0.85rem;
+}
+
+.footerLinks a:hover {
+  color: var(--text-primary);
+}
+
+.mb-4 { margin-bottom: 1rem; }
+.mb-2 { margin-bottom: 0.5rem; }
+.mb-6 { margin-bottom: 1.5rem; }
+.mx-auto { margin-left: auto; margin-right: auto; }
+.text-center { text-align: center; }
+.text-2xl { font-size: 2rem; }

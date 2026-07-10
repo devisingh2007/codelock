@@ -1,0 +1,50 @@
+.card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--panel-bg);
+  border: 1px solid var(--panel-border);
+  border-radius: var(--border-radius-md);
+  padding: var(--spacing-md);
+  aspect-ratio: 1;
+  text-align: center;
+  gap: var(--spacing-sm);
+  transition: all 0.2s;
+  cursor: pointer;
+}
+
+.card:hover {
+  border-color: var(--accent-color);
+  box-shadow: 0 0 10px rgba(242, 193, 78, 0.1);
+}
+
+.iconContainer {
+  color: var(--accent-color);
+  margin-bottom: var(--spacing-xs);
+}
+
+.name {
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.locked {
+  background-color: rgba(0, 0, 0, 0.2);
+  border: 1px dashed var(--panel-border);
+  cursor: not-allowed;
+}
+
+.locked:hover {
+  border-color: var(--panel-border);
+  box-shadow: none;
+}
+
+.locked .iconContainer {
+  color: var(--text-muted);
+}
+
+.locked .name {
+  color: var(--text-muted);
+}
