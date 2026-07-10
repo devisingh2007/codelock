@@ -98,6 +98,11 @@ afterAll(async () => {
   if (mongoServer) await mongoServer.stop();
 });
 
+afterEach(() => {
+  sockets.forEach((s) => s.disconnect());
+  sockets = [];
+});
+
 beforeEach(async () => {
   await GameRoom.deleteMany({});
   await GameState.deleteMany({});
@@ -196,7 +201,7 @@ describe("Phase 10: Final Game Resolution, AI Reveal and summary Tests", () => {
 
     const socketReveal = await revealPromise;
     expect(socketReveal.roomId).toBe(testRoomCode);
-    expect(socketReveal.finalReveal.actualMurderer).toBe("detective_suspect_2");
+    expect(socketReveal.finalReveal.actualMurderer).toBe("detective_player_2");
 
     // 4. Verify GameState fields populated in database
     const dbGameState = await GameState.findOne({ roomId: testRoomCode });
