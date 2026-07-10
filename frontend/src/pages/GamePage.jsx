@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { getLobbyState, getFeedMessages, getEvidence, getObjectives, getTimeline, sendMessage } from '../api/gameApi';
+import { getLobbyState, getEvidence, getObjectives, getTimeline, sendMessage, connectSocket, disconnectSocket } from '../api/gameApi';
 import LeftSidebar from '../components/LeftSidebar';
 import BottomActionBar from '../components/BottomActionBar';
 import InvestigationFeed from '../components/InvestigationFeed';
@@ -23,28 +23,75 @@ const GamePage = () => {
 
   useEffect(() => {
     const fetchData = async () => {
-      const state = await getLobbyState(roomCode);
-      const msgs = await getFeedMessages(roomCode);
-      const evs = await getEvidence(roomCode);
-      const objs = await getObjectives(roomCode);
-      const time = await getTimeline(roomCode);
+      try {
+        const state = await getLobbyState(roomCode);
+        const evs = await getEvidence(roomCode);
+        const objs = await getObjectives(roomCode);
+        const time = await getTimeline(roomCode);
 
-      setRoomState(state);
-      setMessages(msgs);
-      setEvidence(evs);
-      setObjectives(objs);
-      setTimeline(time);
+        setRoomState(state);
+        setEvidence(evs);
+        setObjectives(objs);
+        setTimeline(time);
+      } catch (err) {
+        console.error(err);
+      }
     };
     
     fetchData();
 
-    // Poll for new messages every 3 seconds to catch AI responses
-    const interval = setInterval(async () => {
-      const msgs = await getFeedMessages(roomCode);
-      setMessages(msgs);
-    }, 3000);
+    // Connect Socket.IO
+    connectSocket(roomCode, (event, payload) => {
+      console.log(`[GamePage] Event received: ${event}`, payload);
+      
+      if (event === 'joined-room' && payload.chatHistory) {
+        const history = payload.chatHistory.map(h => ({
+          id: h._id,
+          sender: h.senderUsername,
+          type: h.senderUsername === 'Game Master' ? 'gm' : 'player',
+          content: h.message,
+          time: new Date(h.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+        }));
+        setMessages(history);
+      }
+      
+      else if (event === 'room-message') {
+        setMessages(prev => [
+          ...prev,
+          {
+            id: payload.id || `msg-${Date.now()}`,
+            sender: payload.sender.username,
+            type: payload.sender.username === 'Game Master' ? 'gm' : 'player',
+            content: payload.message,
+            time: new Date(payload.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+          }
+        ]);
+      }
+      
+      else if (event === 'sync-state' || event === 'state-changed') {
+        const state = payload.state;
+        if (state && state.story && state.story.victim) {
+          if (state.story.timeline) {
+            setTimeline(state.story.timeline.map(t => ({
+              date: t.time,
+              event: t.event
+            })));
+          }
+          if (state.story.crime) {
+            setEvidence([
+              { id: 'e1', name: state.story.crime.weapon || 'Murder Weapon', status: 'revealed', icon: 'sample' },
+              { id: 'e2', name: 'Crime Summary', status: 'revealed', icon: 'document' },
+              { id: 'e3', name: 'Victim Dossier', status: 'revealed', icon: 'document' },
+              { id: 'e4', name: 'Alibis & Motives', status: 'revealed', icon: 'document' }
+            ]);
+          }
+        }
+      }
+    });
 
-    return () => clearInterval(interval);
+    return () => {
+      disconnectSocket();
+    };
   }, [roomCode]);
 
   const handleSendMessage = async (e) => {
@@ -54,9 +101,6 @@ const GamePage = () => {
     const input = chatInput;
     setChatInput('');
     await sendMessage(roomCode, input);
-    // Poll will pick it up or we can eagerly refresh
-    const msgs = await getFeedMessages(roomCode);
-    setMessages(msgs);
   };
 
   if (!roomState) return <div className={styles.loading}>Connecting to HUD...</div>;

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { getLobbyState } from '../api/gameApi';
+import { getLobbyState, connectSocket, disconnectSocket, sendMessage, generateMysteryForRoomCode } from '../api/gameApi';
 import TopNavBar from '../components/TopNavBar';
 import PlayerCard from '../components/PlayerCard';
 import SuspicionMeter from '../components/SuspicionMeter';
@@ -11,20 +11,127 @@ const LobbyPage = () => {
   const { roomCode } = useParams();
   const navigate = useNavigate();
   const [roomState, setRoomState] = useState(null);
+  const [chatMessages, setChatMessages] = useState([
+    { id: 'sys-1', sender: 'System', message: 'Connecting to the secure comms channel...' }
+  ]);
+  const [chatInput, setChatInput] = useState('');
+  const [error, setError] = useState('');
+  const [starting, setStarting] = useState(false);
 
   useEffect(() => {
+    // 1. Fetch initial state
     const fetchState = async () => {
-      const state = await getLobbyState(roomCode);
-      setRoomState(state);
+      try {
+        const state = await getLobbyState(roomCode);
+        setRoomState(state);
+      } catch (err) {
+        console.error(err);
+        setError('Failed to load lobby state.');
+      }
     };
     fetchState();
-  }, [roomCode]);
+
+    // 2. Connect Socket.IO
+    const socket = connectSocket(roomCode, (event, payload) => {
+      console.log(`[LobbyPage] Received event: ${event}`, payload);
+      
+      if (event === 'joined-room') {
+        if (payload.chatHistory) {
+          const history = payload.chatHistory.map(h => ({
+            id: h._id,
+            sender: h.senderUsername,
+            message: h.message,
+            timestamp: new Date(h.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+          }));
+          setChatMessages([
+            { id: 'sys-2', sender: 'System', message: 'Joined secure lobby channel.' },
+            ...history
+          ]);
+        }
+      }
+      
+      else if (event === 'user-joined') {
+        // Refresh players list
+        fetchState();
+        setChatMessages(prev => [
+          ...prev,
+          { id: `join-${Date.now()}`, sender: 'System', message: `${payload.username} has entered the room.` }
+        ]);
+      }
+      
+      else if (event === 'user-left') {
+        // Refresh players list
+        fetchState();
+        setChatMessages(prev => [
+          ...prev,
+          { id: `left-${Date.now()}`, sender: 'System', message: `${payload.username} has disconnected.` }
+        ]);
+      }
+      
+      else if (event === 'room-message') {
+        setChatMessages(prev => [
+          ...prev,
+          {
+            id: payload.id || `msg-${Date.now()}`,
+            sender: payload.sender.username,
+            message: payload.message,
+            timestamp: new Date(payload.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+          }
+        ]);
+      }
+      
+      else if (event === 'mystery-generated') {
+        setChatMessages(prev => [
+          ...prev,
+          { id: `sys-gen-${Date.now()}`, sender: 'System', message: 'AI Mystery successfully generated!' }
+        ]);
+        // All players automatically navigate to the character sheet reveal page
+        setTimeout(() => {
+          navigate(`/game/${roomCode}/character`);
+        }, 1500);
+      }
+    });
+
+    return () => {
+      disconnectSocket();
+    };
+  }, [roomCode, navigate]);
+
+  const handleSendChat = async (e) => {
+    e.preventDefault();
+    if (!chatInput.trim()) return;
+    try {
+      await sendMessage(roomCode, chatInput);
+      setChatInput('');
+    } catch (err) {
+      console.error('Failed to send message:', err);
+    }
+  };
+
+  const handleStartInvestigation = async () => {
+    setStarting(true);
+    setError('');
+    try {
+      // Host triggers the mystery generation
+      await generateMysteryForRoomCode(roomCode);
+    } catch (err) {
+      console.error(err);
+      setError(err.message || 'Failed to generate mystery. Check if Ollama is running.');
+      setStarting(false);
+    }
+  };
+
+  const handleCopyCode = () => {
+    navigator.clipboard.writeText(roomCode);
+  };
 
   if (!roomState) {
     return <div className={styles.loading}>Connecting to the Estate...</div>;
   }
 
   const { caseInfo, players } = roomState;
+  const me = players.find(p => p.isMe);
+  const isHost = me ? me.isHost : false;
 
   return (
     <div className={styles.container}>
@@ -37,38 +144,44 @@ const LobbyPage = () => {
             <div>
               <h1 className={`${styles.caseTitle} font-serif`}>{caseInfo.name}</h1>
               <p className="text-muted font-mono">Case #{caseInfo.number} • Waiting for investigators...</p>
+              {error && <div style={{ color: 'var(--accent-color)', fontFamily: 'monospace', marginTop: '10px' }}>{error}</div>}
             </div>
             <div className={styles.roomCodeBox}>
               <span className="font-mono text-muted">ROOM CODE</span>
               <div className={styles.codeRow}>
                 <span className={`${styles.code} font-mono`}>{roomCode}</span>
-                <button className={styles.copyBtn}><Copy size={16} /></button>
+                <button className={styles.copyBtn} onClick={handleCopyCode}><Copy size={16} /></button>
               </div>
             </div>
           </div>
 
           <div className={styles.playersGrid}>
             {players.map(p => <PlayerCard key={p.id} player={p} />)}
-            <button className={styles.inviteCard}>
+            <button className={styles.inviteCard} onClick={handleCopyCode}>
               <Plus size={24} className="mb-2" />
-              <span>INVITE FRIEND</span>
+              <span>COPY ROOM CODE</span>
             </button>
           </div>
 
           <div className={`hud-card ${styles.chatPanel}`}>
             <h3 className="font-mono text-muted mb-4">LIVE LOBBY FEED</h3>
             <div className={styles.chatScroll}>
-              <div className={styles.chatMsg}>
-                <span className="text-accent">System:</span> Waiting for host to initiate the protocol...
-              </div>
-              <div className={styles.chatMsg}>
-                <span className="text-accent">Arthur:</span> Are we ready to begin?
-              </div>
+              {chatMessages.map(msg => (
+                <div key={msg.id} className={styles.chatMsg}>
+                  <span className={msg.sender === 'System' ? 'text-danger' : 'text-accent'}>{msg.sender}:</span> {msg.message}
+                </div>
+              ))}
             </div>
-            <div className={styles.chatInputRow}>
-              <input type="text" placeholder="Send message..." className={styles.chatInput} />
-              <button className={styles.sendBtn}><Send size={18} /></button>
-            </div>
+            <form className={styles.chatInputRow} onSubmit={handleSendChat}>
+              <input 
+                type="text" 
+                placeholder="Send message..." 
+                className={styles.chatInput} 
+                value={chatInput}
+                onChange={(e) => setChatInput(e.target.value)}
+              />
+              <button type="submit" className={styles.sendBtn}><Send size={18} /></button>
+            </form>
           </div>
         </div>
 
@@ -85,8 +198,9 @@ const LobbyPage = () => {
             <div className={styles.paramGroup}>
               <label className="font-mono text-muted">DIFFICULTY</label>
               <div className={styles.pills}>
-                <div className={`${styles.pill} ${caseInfo.difficulty === 'Novice' ? styles.pillActive : ''}`}>Novice</div>
-                <div className={`${styles.pill} ${caseInfo.difficulty === 'Master' ? styles.pillActive : ''}`}>Master</div>
+                <div className={`${styles.pill} ${caseInfo.difficulty === 'Easy' || caseInfo.difficulty === 'Novice' ? styles.pillActive : ''}`}>Easy</div>
+                <div className={`${styles.pill} ${caseInfo.difficulty === 'Medium' ? styles.pillActive : ''}`}>Medium</div>
+                <div className={`${styles.pill} ${caseInfo.difficulty === 'Hard' || caseInfo.difficulty === 'Master' ? styles.pillActive : ''}`}>Hard</div>
               </div>
             </div>
 
@@ -100,12 +214,23 @@ const LobbyPage = () => {
             <div className={styles.playerCount}>
               <span className="font-mono">{players.length}/8 PLAYERS READY</span>
             </div>
-            <button 
-              className={styles.startBtn} 
-              onClick={() => navigate(`/game/${roomCode}/character`)}
-            >
-              START INVESTIGATION
-            </button>
+            {isHost ? (
+              <button 
+                className={styles.startBtn} 
+                disabled={starting}
+                onClick={handleStartInvestigation}
+              >
+                {starting ? 'GENERATING MYSTERY...' : 'START INVESTIGATION'}
+              </button>
+            ) : (
+              <button 
+                className={styles.startBtn} 
+                disabled
+                style={{ opacity: 0.6, cursor: 'not-allowed' }}
+              >
+                WAITING FOR HOST
+              </button>
+            )}
             <p className={styles.hostNote}>Only the host can initiate the case</p>
           </div>
         </div>

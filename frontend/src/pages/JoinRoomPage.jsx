@@ -1,17 +1,31 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ShieldAlert, MapPin, Users } from 'lucide-react';
+import { autoAuthenticate, joinRoom } from '../api/gameApi';
 import styles from './JoinRoomPage.module.css';
 
 const JoinRoomPage = () => {
   const [playerName, setPlayerName] = useState('');
   const [roomCode, setRoomCode] = useState('');
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
-  const handleJoin = (e) => {
+  const handleJoin = async (e) => {
     e.preventDefault();
     if (playerName.trim() && roomCode.trim()) {
-      navigate(`/lobby/${roomCode.toUpperCase()}`);
+      setLoading(true);
+      setError('');
+      try {
+        await autoAuthenticate(playerName);
+        await joinRoom(roomCode);
+        navigate(`/lobby/${roomCode.toUpperCase()}`);
+      } catch (err) {
+        console.error(err);
+        setError(err.message || 'Failed to join room.');
+      } finally {
+        setLoading(false);
+      }
     }
   };
 
@@ -24,6 +38,7 @@ const JoinRoomPage = () => {
           <div className="text-center mb-6">
             <h1 className="font-serif text-2xl text-accent mb-2">Join Investigation</h1>
             <p className="text-muted">Enter the scene of the crime</p>
+            {error && <div style={{ color: 'var(--accent-color)', fontFamily: 'monospace', marginTop: '10px' }}>{error}</div>}
           </div>
 
           <form onSubmit={handleJoin} className={styles.form}>
@@ -50,8 +65,8 @@ const JoinRoomPage = () => {
               />
             </div>
 
-            <button type="submit" className={styles.submitBtn}>
-              JOIN ROOM
+            <button type="submit" className={styles.submitBtn} disabled={loading}>
+              {loading ? 'JOINING...' : 'JOIN ROOM'}
             </button>
             <button type="button" className={styles.backBtn} onClick={() => navigate('/')}>
               Back to Home
