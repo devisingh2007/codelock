@@ -73,6 +73,18 @@ const UsersIcon = () => (
 const LandingPage = () => {
   const navigate = useNavigate();
 
+  const scrollToSection = (id) => {
+    const element = document.getElementById(id);
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
+
+  const handleRequestDemo = (e) => {
+    e.preventDefault();
+    alert("Request Registered! We've reserved a demo slot for your detective team. We will email you with your access credentials shortly.");
+  };
+
   return (
     <div className={styles.container}>
       {/* Header / Navbar */}
@@ -82,9 +94,9 @@ const LandingPage = () => {
           <span className={styles.logoText}>MIDNIGHT <span>MURDER</span></span>
         </div>
         <nav className={styles.navLinks}>
-          <a className={styles.navLink}>HOW TO PLAY</a>
-          <a className={styles.navLink}>FEATURES</a>
-          <a className={styles.navLink}>FAQ</a>
+          <a className={styles.navLink} onClick={() => scrollToSection('how-to-play')}>HOW TO PLAY</a>
+          <a className={styles.navLink} onClick={() => scrollToSection('features')}>FEATURES</a>
+          <a className={styles.navLink} onClick={() => scrollToSection('faq')}>FAQ</a>
           <button className={styles.joinNavBtn} onClick={() => navigate('/join')}>
             <Users size={16} /> JOIN ROOM
           </button>
@@ -108,7 +120,7 @@ const LandingPage = () => {
               <Users size={18} /> JOIN ROOM
             </button>
           </div>
-          <a className={styles.demoLink}>
+          <a className={styles.demoLink} onClick={handleRequestDemo}>
             REQUEST A DEMO <ArrowRight size={14} />
           </a>
         </div>
@@ -116,7 +128,7 @@ const LandingPage = () => {
       </section>
 
       {/* Features Section */}
-      <section className={styles.features}>
+      <section id="features" className={styles.features}>
         <div className={styles.sectionHeader}>
           <div className={styles.sectionTitle}>
             <TargetIcon /> ENGINEERED FOR <span>INVESTIGATION</span> <TargetIcon />
@@ -156,7 +168,7 @@ const LandingPage = () => {
       </section>
 
       {/* Protocol Section */}
-      <section className={styles.protocol}>
+      <section id="how-to-play" className={styles.protocol}>
         <div className={styles.sectionHeader}>
           <div className={styles.sectionTitle}>
             THE INVESTIGATION <span>PROTOCOL</span>
@@ -198,6 +210,29 @@ const LandingPage = () => {
             </div>
             <h4>REVEAL MURDERER</h4>
             <p>Execute the protocol and expose the culprit.</p>
+          </div>
+        </div>
+      </section>
+
+      {/* FAQ Section */}
+      <section id="faq" className={styles.faq}>
+        <div className={styles.sectionHeader}>
+          <div className={styles.sectionTitle}>
+            FREQUENTLY ASKED <span>QUESTIONS</span>
+          </div>
+        </div>
+        <div className={styles.faqGrid}>
+          <div className={styles.faqItem}>
+            <h5>How does the AI Game Master work?</h5>
+            <p>The AI Game Master dynamically generates the mystery settings, alibis, and timeline. It then reads chat logs in real time, dropping clues only when the group gets stuck.</p>
+          </div>
+          <div className={styles.faqItem}>
+            <h5>Do players get different information?</h5>
+            <p>Yes. Every player gets a unique suspect persona, motive, private objective, and a classified secret that no one else knows.</p>
+          </div>
+          <div className={styles.faqItem}>
+            <h5>How many players are supported?</h5>
+            <p>Our cases are designed for 4 to 8 players to participate simultaneously in the investigation.</p>
           </div>
         </div>
       </section>
