@@ -23,6 +23,10 @@ const LobbyPage = () => {
     const fetchState = async () => {
       try {
         const state = await getLobbyState(roomCode);
+        if (state && state.status === 'in_progress') {
+          navigate(`/game/${roomCode}/character`);
+          return;
+        }
         setRoomState(state);
       } catch (err) {
         console.error(err);

@@ -188,12 +188,17 @@ const generateMysteryForRoom = async (req, res, next) => {
     const storyPayload = { ...mystery, generatedAt: new Date() };
     const gameState = await gameStateService.getOrCreateState(roomCode);
     gameState.story = storyPayload;
+    gameState.phase = "roles-assigned"; // Automatically transition phase
     gameState.lastUpdated = new Date();
     await gameState.save();
 
+    // 4b. Update GameRoom status to in_progress
+    room.status = "in_progress";
+    await room.save();
+
     metrics.mysteriesGenerated++;
     console.log(
-      `[GameController] Story saved to GameState for room ${roomCode}. ` +
+      `[GameController] Story saved and phase advanced to roles-assigned for room ${roomCode}. ` +
         `[Metrics] Total generated: ${metrics.mysteriesGenerated}`
     );
 

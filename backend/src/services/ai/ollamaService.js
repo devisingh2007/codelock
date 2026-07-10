@@ -79,7 +79,35 @@ const buildHeaders = () => {
  */
 const sendPrompt = async (prompt, options = {}) => {
   const model = options.model ?? aiConfig.model;
-  const url = `${aiConfig.ollamaUrl}/api/generate`;
+  const baseUrl = aiConfig.ollamaUrl;
+  
+  const isGroq = baseUrl.includes("groq.com");
+  const isChatCompletions = baseUrl.endsWith("/chat/completions") || baseUrl.endsWith("/completions") || isGroq;
+
+  let url = `${baseUrl}/api/generate`;
+  let postBody;
+
+  if (isChatCompletions) {
+    url = baseUrl.endsWith("/chat/completions") ? baseUrl : `${baseUrl.replace(/\/$/, "")}/chat/completions`;
+    postBody = {
+      model,
+      messages: [{ role: "user", content: prompt }],
+      response_format: { type: "json_object" },
+      temperature: 0.7,
+      max_tokens: 2048,
+    };
+  } else {
+    postBody = {
+      model,
+      prompt,
+      format: "json",
+      stream: false, // We want the full response in one shot
+      options: {
+        temperature: 0.7,
+        num_predict: 2048,
+      },
+    };
+  }
 
   let attempt = 0;
 
@@ -98,22 +126,17 @@ const sendPrompt = async (prompt, options = {}) => {
     try {
       const response = await axios.post(
         url,
-        {
-          model,
-          prompt,
-          stream: false, // We want the full response in one shot
-          options: {
-            temperature: 0.7,
-            num_predict: 2048,
-          },
-        },
+        postBody,
         {
           headers: buildHeaders(),
           timeout: aiConfig.timeoutMs,
         }
       );
 
-      const text = response.data?.response ?? "";
+      const text = isChatCompletions
+        ? (response.data?.choices?.[0]?.message?.content ?? "")
+        : (response.data?.response ?? "");
+
       console.log(
         `[OllamaService] ← 200 OK | ${attemptLabel} | response_length=${text.length}`
       );
@@ -126,7 +149,7 @@ const sendPrompt = async (prompt, options = {}) => {
 
       console.error(
         `[OllamaService] ✗ ${attemptLabel} failed | status=${status ?? "network"} | ` +
-          `msg=${err.message}`
+          `msg=${err.message} | data=${JSON.stringify(err.response?.data)}`
       );
 
       // If no more retries or non-retryable, throw immediately
