@@ -316,3 +316,76 @@
   color: #fff;
   box-shadow: 0 0 15px var(--danger-glow);
 }
+
+.modalOverlay { 
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.85);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  backdrop-filter: blur(5px);
+}
+
+.modalContent {
+  background-color: var(--panel-bg);
+  border: 1px solid var(--panel-border);
+  padding: var(--spacing-xl);
+  border-radius: var(--border-radius-md);
+  max-width: 500px;
+  width: 90%;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.7);
+  color: var(--text-primary);
+}
+
+.modalHeader {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+  border-bottom: 1px solid var(--panel-border);
+  padding-bottom: var(--spacing-sm);
+}
+
+.modalDesc {
+  font-size: 0.95rem;
+  line-height: 1.5;
+  color: var(--text-secondary);
+}
+
+.modalActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--spacing-sm);
+  margin-top: var(--spacing-md);
+}
+
+.modalCloseBtn {
+  background: transparent;
+  border: 1px solid var(--panel-border);
+  color: var(--text-secondary);
+  padding: var(--spacing-sm) var(--spacing-md);
+  border-radius: var(--border-radius-sm);
+  cursor: pointer;
+}
+
+.modalInspectBtn {
+  background-color: rgba(242, 193, 78, 0.1);
+  border: 1px solid var(--accent-color);
+  color: var(--accent-color);
+  padding: var(--spacing-sm) var(--spacing-md);
+  border-radius: var(--border-radius-sm);
+  cursor: pointer;
+  font-weight: 700;
+}
+
+.modalInspectBtn:hover {
+  background-color: var(--accent-color);
+  color: #000;
+}

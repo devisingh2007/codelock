@@ -189,6 +189,15 @@ const generateMysteryForRoom = async (req, res, next) => {
     const storyPayload = { ...mystery, generatedAt: new Date() };
     const gameState = await gameStateService.getOrCreateState(roomCode);
     gameState.story = storyPayload;
+    
+    // Copy active players from GameRoom to GameState
+    const activePlayers = Array.isArray(room.players) ? room.players : [];
+    gameState.players = activePlayers.map(p => ({
+      userId: p.userId || p._id || p,
+      displayName: p.displayName || `Player_${p.userId || p._id || p}`,
+      isReady: true
+    }));
+    
     gameState.lastUpdated = new Date();
     await gameState.save();
 

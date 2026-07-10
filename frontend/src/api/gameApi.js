@@ -98,11 +98,14 @@ export async function getRoom(roomCode) {
   return data.room;
 }
 
-export async function generateMysteryForRoomCode(roomCode) {
+export async function generateMysteryForRoomCode(roomCode, options = {}) {
   const res = await fetch(`${API_BASE_URL}/api/game/${roomCode.toUpperCase()}/generate-mystery`, {
     method: 'POST',
     headers: getHeaders(),
-    body: JSON.stringify({ difficulty: 'medium' })
+    body: JSON.stringify({
+      difficulty: options.difficulty || 'medium',
+      locationHints: options.locationHints || ''
+    })
   });
   const data = await res.json();
   if (!res.ok) throw new Error(data.error || 'Failed to generate mystery');
@@ -280,8 +283,20 @@ export async function getEvidence(roomCode) {
       if (state && state.story && state.story.crime) {
         const weapon = state.story.crime.weapon;
         return [
-          { id: 'e1', name: weapon, status: 'revealed', icon: 'sample' },
-          { id: 'e2', name: 'Crime Summary', status: 'revealed', icon: 'document' },
+          { 
+            id: 'e1', 
+            name: weapon, 
+            status: 'revealed', 
+            icon: 'sample',
+            description: 'This appears to be the murder weapon. It was found near the scene of the crime. Perhaps the AI Game Master knows more about its origins?'
+          },
+          { 
+            id: 'e2', 
+            name: 'Crime Summary', 
+            status: 'revealed', 
+            icon: 'document',
+            description: 'A detailed report of the incident. The victim was found dead under mysterious circumstances. Time of death is estimated to be around midnight. Cause of death requires further investigation.'
+          },
           ...mockEvidenceLog.slice(2)
         ];
       }
@@ -330,19 +345,42 @@ export async function getSuspects(roomCode) {
       if (state && state.story && state.story.suspects) {
         const currentUsername = localStorage.getItem('username');
         const roles = state.roles || [];
+        
+        // Fetch current votes if available
+        let voteCounts = {};
+        try {
+          const resVotes = await fetch(`${API_BASE_URL}/api/vote/vote/${roomCode.toUpperCase()}/results`, {
+            method: 'GET',
+            headers: getHeaders()
+          });
+          if (resVotes.ok) {
+            const dataVotes = await resVotes.json();
+            voteCounts = dataVotes.votes || {};
+          }
+        } catch (vErr) {
+          console.warn('Failed to fetch vote results, defaulting counts to 0', vErr);
+        }
+
         return state.story.suspects.map((s, idx) => {
           const associatedRole = roles.find(r => r.roleName === s.name);
           const playerUsername = associatedRole?.userId?.username;
           // Append player name to suspect name if mapped
           const displayName = playerUsername ? `${s.name} (${playerUsername})` : s.name;
           const isMe = playerUsername === currentUsername;
+          
+          // Get actual vote count for this player's username
+          const voteCount = playerUsername ? (voteCounts[playerUsername] || 0) : 0;
+          
+          // Calculate suspicion level dynamically based on votes (baseline 25% + 25% per vote)
+          const suspicion = Math.min(25 + (voteCount * 25), 100);
+
           return {
-            id: `s${idx}`,
+            id: associatedRole?.userId?._id || associatedRole?.userId || `s${idx}`,
             name: displayName,
             role: s.relationshipToVictim,
-            votes: s.isMurderer ? 2 : 0,
+            votes: voteCount,
             isMe: isMe,
-            suspicionLevel: s.isMurderer ? 80 : 30
+            suspicionLevel: suspicion
           };
         });
       }
@@ -354,8 +392,14 @@ export async function getSuspects(roomCode) {
 }
 
 export async function castVote(roomCode, suspectId) {
-  console.log(`[API] castVote - Room: ${roomCode}, Suspect: ${suspectId}`);
-  return { success: true };
+  const res = await fetch(`${API_BASE_URL}/api/vote/vote`, {
+    method: 'POST',
+    headers: getHeaders(),
+    body: JSON.stringify({ roomId: roomCode.toUpperCase(), accusedPlayerId: suspectId })
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error || 'Failed to cast vote');
+  return data;
 }
 
 export async function getRevealData(roomCode) {

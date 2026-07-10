@@ -73,10 +73,10 @@ export const mockFeedMessages = [
 ];
 
 export const mockEvidenceLog = [
-  { id: 'e1', name: 'Torn Velvet', status: 'revealed', icon: 'document' },
-  { id: 'e2', name: 'Shattered Glass', status: 'revealed', icon: 'sample' },
-  { id: 'e3', name: '???', status: 'locked', icon: 'lock' },
-  { id: 'e4', name: '???', status: 'locked', icon: 'lock' },
+  { id: 'e1', name: 'Torn Velvet', status: 'revealed', icon: 'document', description: 'A piece of torn velvet fabric that matches the drapes in the conservatory. Found snagged on a broken vase.' },
+  { id: 'e2', name: 'Shattered Glass', status: 'revealed', icon: 'sample', description: 'Remnants of a crystal brandy snifter. Trace amounts of a bitter-smelling substance were detected inside.' },
+  { id: 'e3', name: '???', status: 'locked', icon: 'lock', description: '' },
+  { id: 'e4', name: '???', status: 'locked', icon: 'lock', description: '' },
 ];
 
 export const mockObjectives = [
@@ -131,19 +131,21 @@ export const mockProfile = {
   stats: {
     casesSolved: 128,
     winRate: 76,
+    correctAccusations: 97,
+    playtime: '142h 38m',
     accuracyTrend: [60, 65, 70, 72, 85, 94]
   },
+  achievements: [
+    { name: 'First Blood', desc: 'Solved your first case.', unlocked: true },
+    { name: 'Master Sleuth', desc: 'Achieved a 90%+ accuracy rating.', unlocked: true },
+    { name: 'Flawless Victory', desc: 'Identify the murderer without any wrong guesses.', unlocked: false },
+    { name: 'Speedrunner', desc: 'Solve a case in under 20 minutes.', unlocked: false }
+  ],
   preferredAsset: {
     name: 'Eleanor Vance',
     quote: '"Money speaks, but silence is golden."',
     syncRate: 98
   },
-  accolades: [
-    { id: 'a1', title: 'First Blood', unlocked: true },
-    { id: 'a2', title: 'Master Sleuth', unlocked: true },
-    { id: 'a3', title: 'Flawless Victory', unlocked: false },
-    { id: 'a4', title: 'Speedrunner', unlocked: false }
-  ]
 };
 
 export const mockRoomState = {

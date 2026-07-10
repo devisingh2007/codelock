@@ -12,7 +12,9 @@ const ProfilePage = () => {
   useEffect(() => {
     const fetchProfile = async () => {
       const data = await getProfile();
-      setProfile(data);
+      // Personalize with the actual logged-in player's name
+      const realName = localStorage.getItem('username') || data.name;
+      setProfile({ ...data, name: realName });
     };
     fetchProfile();
   }, []);

@@ -17,6 +17,7 @@ const LobbyPage = () => {
   const [chatInput, setChatInput] = useState('');
   const [error, setError] = useState('');
   const [starting, setStarting] = useState(false);
+  const [selectedDifficulty, setSelectedDifficulty] = useState(localStorage.getItem('difficulty') || 'medium');
 
   useEffect(() => {
     // 1. Fetch initial state
@@ -28,6 +29,10 @@ const LobbyPage = () => {
           return;
         }
         setRoomState(state);
+        if (state && state.caseInfo && state.caseInfo.difficulty) {
+          // Sync state difficulty if present
+          setSelectedDifficulty(state.caseInfo.difficulty.toLowerCase());
+        }
       } catch (err) {
         console.error(err);
         setError('Failed to load lobby state.');
@@ -116,8 +121,13 @@ const LobbyPage = () => {
     setStarting(true);
     setError('');
     try {
-      // Host triggers the mystery generation
-      await generateMysteryForRoomCode(roomCode);
+      const theme = localStorage.getItem('theme') || 'mansion';
+      
+      // Host triggers the mystery generation with case settings
+      await generateMysteryForRoomCode(roomCode, {
+        difficulty: selectedDifficulty,
+        locationHints: `Theme: ${theme}`
+      });
     } catch (err) {
       console.error(err);
       setError(err.message || 'Failed to generate mystery. Check if Ollama is running.');
@@ -211,18 +221,23 @@ const LobbyPage = () => {
             </div>
 
             <div className={styles.paramGroup}>
-              <label className="font-mono text-muted">DIFFICULTY</label>
+              <label className="font-mono text-muted">
+                DIFFICULTY {isHost && <span style={{ color: 'var(--accent-color)', fontSize: '10px' }}>(EDITABLE)</span>}
+              </label>
               <div className={styles.pills}>
-                <div className={`${styles.pill} ${caseInfo.difficulty === 'Easy' || caseInfo.difficulty === 'Novice' ? styles.pillActive : ''}`}>Easy</div>
-                <div className={`${styles.pill} ${caseInfo.difficulty === 'Medium' ? styles.pillActive : ''}`}>Medium</div>
-                <div className={`${styles.pill} ${caseInfo.difficulty === 'Hard' || caseInfo.difficulty === 'Master' ? styles.pillActive : ''}`}>Hard</div>
+                {['Easy', 'Medium', 'Hard'].map((level) => (
+                  <div
+                    key={level}
+                    className={`${styles.pill} ${selectedDifficulty === level.toLowerCase() ? styles.pillActive : ''}`}
+                    style={isHost ? { cursor: 'pointer' } : {}}
+                    onClick={() => isHost && setSelectedDifficulty(level.toLowerCase())}
+                  >
+                    {level}
+                  </div>
+                ))}
               </div>
             </div>
 
-            <div className={styles.statsList}>
-              <SuspicionMeter level={85} label="SUSPENSE LEVEL" variant="text" />
-              <SuspicionMeter level={30} label="AI ACTIVITY" variant="text" />
-            </div>
           </div>
 
           <div className={styles.startContainer}>

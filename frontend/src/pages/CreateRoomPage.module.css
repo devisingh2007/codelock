@@ -21,6 +21,15 @@
   background-color: #05070c;
 }
 
+/* Hide scrollbar completely */
+.formContainer::-webkit-scrollbar {
+  display: none;
+}
+.formContainer {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+}
+
 .formWrapper {
   width: 100%;
   max-width: 580px; /* Aligns to form card layout width */

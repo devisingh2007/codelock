@@ -24,7 +24,10 @@ const BottomActionBar = ({ roomCode }) => {
         <span>Inspect</span>
       </button>
 
-      <button className={`${styles.actionBtn} ${isActive('search') ? styles.active : ''}`}>
+      <button 
+        className={`${styles.actionBtn} ${isActive('board') ? styles.active : ''}`}
+        onClick={() => navigate(`/game/${roomCode}/board`)}
+      >
         <div className={styles.iconWrapper}><Search size={20} /></div>
         <span>Search</span>
       </button>
@@ -45,7 +48,10 @@ const BottomActionBar = ({ roomCode }) => {
         <span>Accuse</span>
       </button>
 
-      <button className={`${styles.actionBtn} ${isActive('meeting') ? styles.active : ''}`}>
+      <button 
+        className={`${styles.actionBtn} ${isActive('meeting') ? styles.active : ''}`}
+        onClick={() => navigate(`/game/${roomCode}`)}
+      >
         <div className={styles.iconWrapper}><Users size={20} /></div>
         <span>Meeting</span>
       </button>

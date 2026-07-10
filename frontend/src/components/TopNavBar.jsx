@@ -1,11 +1,21 @@
 import React from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Settings, User } from 'lucide-react';
 import styles from './TopNavBar.module.css';
 
 const TopNavBar = () => {
   const location = useLocation();
+  const navigate = useNavigate();
   const path = location.pathname;
+
+  const handleNavigation = (e) => {
+    if (path.includes('/lobby') || path.includes('/game')) {
+      const confirmLeave = window.confirm("Are you sure you want to leave? You will be disconnected from the current room.");
+      if (!confirmLeave) {
+        e.preventDefault();
+      }
+    }
+  };
 
   return (
     <nav className={styles.navbar}>
@@ -14,15 +24,13 @@ const TopNavBar = () => {
       </div>
       
       <div className={styles.center}>
-        <Link to="/" className={path === '/' ? styles.active : ''}>Home</Link>
-        <Link to="/lobby/NX-4209" className={path.includes('/lobby') ? styles.active : ''}>Lobby</Link>
-        <Link to="/profile" className={path.includes('/profile') ? styles.active : ''}>About</Link>
-        <a href="https://github.com" target="_blank" rel="noreferrer">GitHub</a>
+        <Link to="/" onClick={handleNavigation} className={path === '/' ? styles.active : ''}>Home</Link>
+        <Link to="/profile" onClick={handleNavigation} className={path.includes('/profile') ? styles.active : ''}>About</Link>
       </div>
 
       <div className={styles.right}>
-        <button className={styles.iconBtn}><Settings size={20} /></button>
-        <Link to="/profile" className={styles.iconBtn}><User size={20} /></Link>
+        <button className={styles.iconBtn} onClick={() => navigate('/settings')}><Settings size={20} /></button>
+        <Link to="/profile" onClick={handleNavigation} className={styles.iconBtn}><User size={20} /></Link>
       </div>
     </nav>
   );
