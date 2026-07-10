@@ -190,4 +190,60 @@ To populate your database with dummy rooms and users for local testing:
 node scripts/seedRooms.js
 ```
 
+---
+
+## Real-Time Socket.IO (Phase 4)
+
+The server exposes a Socket.IO endpoint at the same port as the HTTP server. All socket connections require a valid JWT token passed in the handshake `auth` object.
+
+### Connecting
+
+```js
+import { io } from "socket.io-client";
+
+const socket = io("http://localhost:3000", {
+  auth: { token: "<your_jwt_token>" },
+  transports: ["websocket"],
+});
+```
+
+### Events
+
+#### Client → Server
+
+| Event | Payload | Description |
+|---|---|---|
+| `join-room` | `roomCode: string` | Join a game room and receive chat history |
+| `leave-room` | `roomCode: string` | Leave a game room |
+| `room-message` | `{ roomCode, message }` | Send a chat message (max 500 chars) |
+
+#### Server → Client
+
+| Event | Payload | Description |
+|---|---|---|
+| `user-joined` | `{ userId, username, roomCode }` | A new player joined the room |
+| `user-left` | `{ userId, username, roomCode }` | A player left the room |
+| `room-message` | `{ id, roomCode, sender, message, timestamp }` | A new message broadcast to the room |
+
+### Acknowledgements
+
+`join-room`, `leave-room`, and `room-message` support callbacks:
+
+```js
+socket.emit("join-room", "ABCDE1", (response) => {
+  if (response.error) console.error(response.error);
+  else {
+    console.log("Joined room:", response.roomCode);
+    console.log("Chat history:", response.chatHistory);
+  }
+});
+```
+
+### Rate Limiting
+
+Each socket is rate-limited to **10 messages per 5 seconds**. Exceeding this returns an error in the acknowledgement callback.
+
+### Chat Persistence
+
+All messages sent via `room-message` are persisted to MongoDB (`ChatMessage` collection) and auto-deleted after **24 hours** via a TTL index. When a client joins a room, the last **20 messages** are returned in the `join-room` acknowledgement.
 

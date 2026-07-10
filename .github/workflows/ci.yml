@@ -2,9 +2,9 @@ name: Node.js CI
 
 on:
   push:
-    branches: [ "main", "backend-dev", "backend", "feature/game-room" ]
+    branches: [ "main", "backend-dev" ]
   pull_request:
-    branches: [ "main", "backend-dev", "backend", "feature/game-room" ]
+    branches: [ "main", "backend-dev" ]
 
 jobs:
   build-and-test:
