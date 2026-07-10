@@ -32,7 +32,11 @@
   "jest": {
     "testEnvironment": "node",
     "testTimeout": 30000,
-    "forceExit": true
+    "forceExit": true,
+    "testMatch": [
+      "**/__tests__/**/*.test.js",
+      "**/tests/**/*.test.js"
+    ]
   },
   "engines": {
     "node": ">=20.0.0"

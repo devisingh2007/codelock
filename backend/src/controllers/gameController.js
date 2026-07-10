@@ -4,6 +4,57 @@ const gameStateService = require("../services/gameStateService");
 const { generateMystery } = require("../services/ai/mysteryGenerator");
 const { validateMystery } = require("../utils/mysteryValidator");
 const { io } = require("../sockets/gameSocket");
+const aiConfig = require("../config/ai");
+
+// ─── Per-room endpoint rate limiter ───────────────────────────────────────────
+// Uses a sliding-window (1 minute) approach stored in-memory.
+// Map<roomCode, number[]>  – each entry is an array of request timestamps (ms).
+const roomRateLimitMap = new Map();
+
+/**
+ * Per-minute rate limit for /generate-mystery per room.
+ * Reads AI_RATE_LIMIT_PER_MINUTE; falls back to aiConfig or 6.
+ */
+const ROOM_RATE_LIMIT =
+  parseInt(process.env.AI_RATE_LIMIT_PER_MINUTE, 10) ||
+  aiConfig.rateLimitPerMin ||
+  6;
+
+/**
+ * Returns true if the room has exceeded its per-minute request quota.
+ * Mutates roomRateLimitMap to track calls.
+ *
+ * @param {string} roomCode
+ * @returns {boolean}
+ */
+const isRoomRateLimited = (roomCode) => {
+  const now = Date.now();
+  const windowStart = now - 60_000; // 1-minute rolling window
+
+  let timestamps = roomRateLimitMap.get(roomCode) || [];
+  // Prune old timestamps outside the window
+  timestamps = timestamps.filter((ts) => ts >= windowStart);
+
+  if (timestamps.length >= ROOM_RATE_LIMIT) {
+    roomRateLimitMap.set(roomCode, timestamps);
+    return true;
+  }
+
+  timestamps.push(now);
+  roomRateLimitMap.set(roomCode, timestamps);
+  return false;
+};
+
+// ─── Simple in-memory metrics ─────────────────────────────────────────────────
+const metrics = {
+  mysteriesGenerated: 0,
+  mysteriesFailedValidation: 0,
+  aiErrors: 0,
+};
+
+/** Expose read-only metrics snapshot for health/monitoring routes. */
+const getMetrics = () => ({ ...metrics });
+
 
 const createRoom = async (req, res, next) => {
   try {
@@ -84,6 +135,23 @@ const generateMysteryForRoom = async (req, res, next) => {
   const { roomCode } = req.params;
   const userId = req.user?.id;
 
+  // ── Per-room rate limit check ────────────────────────────────────────────────
+  if (isRoomRateLimited(roomCode)) {
+    console.warn(
+      `[GameController] Rate limit exceeded for room ${roomCode} ` +
+        `(limit: ${ROOM_RATE_LIMIT} req/min)`
+    );
+    return res.status(429).json({
+      error: "Too many mystery generation requests for this room. Please wait a minute and try again.",
+      retryAfterSeconds: 60,
+    });
+  }
+
+  console.log(
+    `[GameController] [${new Date().toISOString()}] Mystery generation requested ` +
+      `| room=${roomCode} | user=${userId}`
+  );
+
   try {
     // 1. Load the room and verify host
     const room = await gameService.getRoom(roomCode);
@@ -105,6 +173,11 @@ const generateMysteryForRoom = async (req, res, next) => {
     // 3. Validate (double-check — generator already validates, but be explicit)
     const validationErrors = validateMystery(mystery, Math.max(room.players.length, 2));
     if (validationErrors.length > 0) {
+      metrics.mysteriesFailedValidation++;
+      console.error(
+        `[GameController] Validation failed for room ${roomCode}:`,
+        validationErrors
+      );
       return res.status(500).json({
         error: "AI generated an invalid mystery structure.",
         details: validationErrors,
@@ -117,7 +190,12 @@ const generateMysteryForRoom = async (req, res, next) => {
     gameState.story = storyPayload;
     gameState.lastUpdated = new Date();
     await gameState.save();
-    console.log(`[GameController] Story saved to GameState for room ${roomCode}.`);
+
+    metrics.mysteriesGenerated++;
+    console.log(
+      `[GameController] Story saved to GameState for room ${roomCode}. ` +
+        `[Metrics] Total generated: ${metrics.mysteriesGenerated}`
+    );
 
     // 5. Emit Socket.IO event to all room members
     try {
@@ -131,7 +209,11 @@ const generateMysteryForRoom = async (req, res, next) => {
     // 6. Respond
     return res.status(200).json({ success: true, story: storyPayload });
   } catch (error) {
-    console.error(`[GameController] generateMysteryForRoom error:`, error);
+    metrics.aiErrors++;
+    console.error(
+      `[GameController] generateMysteryForRoom error | room=${roomCode}:`,
+      error
+    );
     next(error);
   }
 };
@@ -142,4 +224,8 @@ module.exports = {
   getRoom,
   deleteRoom,
   generateMysteryForRoom,
+  getMetrics, // exported for health/monitoring
+  // Expose internals for testing rate limit logic
+  _isRoomRateLimited: isRoomRateLimited,
+  _roomRateLimitMap: roomRateLimitMap,
 };
