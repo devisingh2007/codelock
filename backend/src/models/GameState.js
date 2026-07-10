@@ -50,6 +50,24 @@ const SuspectSchema = new mongoose.Schema(
   { _id: false }
 );
 
+const GMHistoryEventSchema = new mongoose.Schema(
+  {
+    actionType: { type: String, required: true },
+    content: { type: String, required: true },
+    timestamp: { type: Date, default: Date.now },
+  },
+  { _id: false }
+);
+
+const PendingActionSchema = new mongoose.Schema(
+  {
+    actionType: { type: String, required: true },
+    payload: { type: mongoose.Schema.Types.Mixed, default: {} },
+    createdAt: { type: Date, default: Date.now },
+  },
+  { _id: false }
+);
+
 /**
  * Full AI-generated mystery story.
  * All fields are optional/defaulted for backward compatibility with
@@ -66,6 +84,9 @@ const StorySchema = new mongoose.Schema(
     clues: { type: [String], default: [] },
     /** ISO timestamp when the mystery was generated */
     generatedAt: { type: Date, default: null },
+    /** AI Game Master logs and pending queues */
+    gmHistory: { type: [GMHistoryEventSchema], default: [] },
+    pendingActions: { type: [PendingActionSchema], default: [] },
   },
   { _id: false }
 );
