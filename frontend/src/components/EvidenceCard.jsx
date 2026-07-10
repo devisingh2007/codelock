@@ -9,7 +9,7 @@ const iconMap = {
   lock: Lock,
 };
 
-const EvidenceCard = ({ evidence }) => {
+const EvidenceCard = ({ evidence, onClick }) => {
   const Icon = iconMap[evidence.icon] || FileText;
 
   if (evidence.status === 'locked') {
@@ -24,7 +24,7 @@ const EvidenceCard = ({ evidence }) => {
   }
 
   return (
-    <div className={styles.card}>
+    <div className={styles.card} onClick={onClick} style={{ cursor: 'pointer' }}>
       <div className={styles.iconContainer}>
         <Icon size={24} />
       </div>

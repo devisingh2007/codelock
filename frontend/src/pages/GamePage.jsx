@@ -103,6 +103,11 @@ const GamePage = () => {
     await sendMessage(roomCode, input);
   };
 
+  const handleEvidenceClick = (ev) => {
+    if (ev.status === 'locked') return;
+    setChatInput(`I want to inspect the ${ev.name}`);
+  };
+
   if (!roomState) return <div className={styles.loading}>Connecting to HUD...</div>;
 
   const { caseInfo, players } = roomState;
@@ -213,7 +218,13 @@ const GamePage = () => {
                     </button>
                   </div>
                   <div className={styles.evidenceGrid}>
-                    {evidence.map(ev => <EvidenceCard key={ev.id} evidence={ev} />)}
+                    {evidence.map(ev => (
+                      <EvidenceCard 
+                        key={ev.id} 
+                        evidence={ev} 
+                        onClick={() => handleEvidenceClick(ev)} 
+                      />
+                    ))}
                   </div>
                 </div>
               )}
