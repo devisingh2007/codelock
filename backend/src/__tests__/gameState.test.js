@@ -189,11 +189,11 @@ describe("gameStateService", () => {
     const initial = await gameStateService.getOrCreateState("UPDTST");
     const updated = await gameStateService.updateState(
       "UPDTST",
-      { story: { victim: "Mr. X" } },
+      { story: { victim: { name: "Mr. X", description: "Businessman" } } },
       initial.__v
     );
     expect(updated.__v).toBe(initial.__v + 1);
-    expect(updated.story.victim).toBe("Mr. X");
+    expect(updated.story.victim.name).toBe("Mr. X");
   });
 
   test("updateState throws VersionConflictError on stale version", async () => {
@@ -268,10 +268,10 @@ describe("Game State REST API", () => {
       const res = await request(app)
         .post(`/api/game/${testRoomCode}/state/update`)
         .set("Authorization", `Bearer ${hostToken}`)
-        .send({ changes: { story: { victim: "Lady Vera" } }, version });
+        .send({ changes: { story: { victim: { name: "Lady Vera", description: "Aristocrat" } } }, version });
 
       expect(res.statusCode).toBe(200);
-      expect(res.body.data.story.victim).toBe("Lady Vera");
+      expect(res.body.data.story.victim.name).toBe("Lady Vera");
       expect(res.body.data.__v).toBe(version + 1);
     });
 
@@ -413,12 +413,12 @@ describe("GameStateSocket events", () => {
     // Host sends update
     hostSocket.emit(
       "state-update",
-      { roomId: testRoomCode, changes: { story: { victim: "Mr. Sockets" } }, version },
+      { roomId: testRoomCode, changes: { story: { victim: { name: "Mr. Sockets", description: "Socket test" } } }, version },
       () => {}
     );
 
     const { state: newState } = await changedPromise;
-    expect(newState.story.victim).toBe("Mr. Sockets");
+    expect(newState.story.victim.name).toBe("Mr. Sockets");
   });
 
   test("state-update returns VERSION_CONFLICT on stale version", async () => {
@@ -461,8 +461,8 @@ describe("Concurrency – optimistic locking", () => {
     const version = state.__v;
 
     const [result1, result2] = await Promise.allSettled([
-      gameStateService.updateState("CONCUR", { story: { victim: "Caller A" } }, version),
-      gameStateService.updateState("CONCUR", { story: { victim: "Caller B" } }, version),
+      gameStateService.updateState("CONCUR", { story: { title: "Caller A" } }, version),
+      gameStateService.updateState("CONCUR", { story: { title: "Caller B" } }, version),
     ]);
 
     const successes = [result1, result2].filter((r) => r.status === "fulfilled");
