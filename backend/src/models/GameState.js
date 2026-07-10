@@ -7,7 +7,7 @@ const STATE_TTL_SECONDS =
 /** Valid game phases in order */
 const PHASES = ["lobby", "investigation", "voting", "reveal"];
 
-// ─── Sub-schemas ──────────────────────────────────────────────────────────────
+// ─── Phase 6 AI Mystery Sub-schemas ─────────────────────────────────────────
 
 const TimelineEventSchema = new mongoose.Schema(
   {
@@ -17,13 +17,55 @@ const TimelineEventSchema = new mongoose.Schema(
   { _id: false }
 );
 
+/** Victim sub-document */
+const VictimSchema = new mongoose.Schema(
+  {
+    name: { type: String, default: "" },
+    description: { type: String, default: "" },
+  },
+  { _id: false }
+);
+
+/** Crime details sub-document */
+const CrimeSchema = new mongoose.Schema(
+  {
+    type: { type: String, default: "" },
+    weapon: { type: String, default: "" },
+    summary: { type: String, default: "" },
+    /** Name of the murderer (matches a suspect.name) */
+    killer: { type: String, default: "" },
+  },
+  { _id: false }
+);
+
+/** Per-suspect sub-document */
+const SuspectSchema = new mongoose.Schema(
+  {
+    name: { type: String, default: "" },
+    background: { type: String, default: "" },
+    relationshipToVictim: { type: String, default: "" },
+    /** True for exactly one suspect – the murderer */
+    isMurderer: { type: Boolean, default: false },
+  },
+  { _id: false }
+);
+
+/**
+ * Full AI-generated mystery story.
+ * All fields are optional/defaulted for backward compatibility with
+ * pre-Phase-6 game states that used the old minimal story shape.
+ */
 const StorySchema = new mongoose.Schema(
   {
-    victim: { type: String, default: "" },
-    murderer: { type: String, default: "" },
+    title: { type: String, default: "" },
     location: { type: String, default: "" },
+    victim: { type: VictimSchema, default: () => ({}) },
+    crime: { type: CrimeSchema, default: () => ({}) },
+    suspects: { type: [SuspectSchema], default: [] },
     timeline: { type: [TimelineEventSchema], default: [] },
     clues: { type: [String], default: [] },
+    /** ISO timestamp when the mystery was generated */
+    generatedAt: { type: Date, default: null },
   },
   { _id: false }
 );
