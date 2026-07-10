@@ -1,0 +1,204 @@
+.pageLayout {
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: var(--spacing-xl);
+}
+
+.loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  font-size: 1.25rem;
+  color: var(--text-secondary);
+  font-family: var(--font-mono);
+  letter-spacing: 0.1em;
+}
+
+.container {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: 1000px;
+  gap: var(--spacing-2xl);
+}
+
+.header {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.identifiedTag {
+  background-color: rgba(242, 193, 78, 0.1);
+  color: var(--accent-color);
+  border: 1px solid var(--accent-color);
+  padding: var(--spacing-xs) var(--spacing-md);
+  border-radius: var(--border-radius-sm);
+  font-size: 0.85rem;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  margin-bottom: var(--spacing-lg);
+  box-shadow: 0 0 10px var(--accent-glow);
+}
+
+.name {
+  font-size: 4rem;
+  color: var(--text-primary);
+  margin-bottom: var(--spacing-xs);
+  text-shadow: 0 0 20px rgba(255,255,255,0.1);
+}
+
+.title {
+  font-size: 1.5rem;
+  color: var(--accent-color);
+  font-style: italic;
+  font-weight: 400;
+}
+
+.mainGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--spacing-2xl);
+}
+
+@media (max-width: 768px) {
+  .mainGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.leftStack {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-lg);
+}
+
+.infoCard {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+}
+
+.cardHeader {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  border-bottom: 1px solid var(--panel-border);
+  padding-bottom: var(--spacing-sm);
+}
+
+.cardHeader h3 {
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+}
+
+.objectiveCard {
+  border-left: 2px solid var(--accent-color);
+}
+
+.classifiedCard {
+  background-color: rgba(192, 57, 43, 0.05);
+  border: 1px solid var(--danger-color);
+  border-left: 2px solid var(--danger-color);
+}
+.classifiedCard .cardHeader {
+  border-bottom-color: rgba(192, 57, 43, 0.2);
+}
+
+.rightPanel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-lg);
+}
+
+.portraitCard {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.fingerprint {
+  position: absolute;
+  top: var(--spacing-md);
+  right: var(--spacing-md);
+  color: var(--accent-color);
+  opacity: 0.3;
+}
+
+.portraitImage {
+  flex: 1;
+  background-image: linear-gradient(to top, rgba(10, 14, 26, 1), rgba(10, 14, 26, 0)),
+                    url('https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&q=80&w=600');
+  background-size: cover;
+  background-position: center;
+  border-radius: var(--border-radius-sm);
+  min-height: 250px;
+  margin-bottom: var(--spacing-lg);
+}
+
+.syncContainer {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+}
+
+.syncHeader {
+  display: flex;
+  justify-content: space-between;
+}
+
+.syncBar {
+  height: 4px;
+  background-color: var(--panel-border);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.syncFill {
+  height: 100%;
+  background-color: var(--accent-color);
+  box-shadow: 0 0 10px var(--accent-glow);
+}
+
+.actionArea {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+}
+
+.acceptBtn {
+  background-color: var(--accent-color);
+  color: #000;
+  padding: var(--spacing-md);
+  font-family: var(--font-mono);
+  font-weight: 700;
+  font-size: 1.1rem;
+  letter-spacing: 0.05em;
+  border-radius: var(--border-radius-sm);
+  box-shadow: 0 0 20px var(--accent-glow);
+  transition: all 0.2s;
+}
+
+.acceptBtn:hover {
+  background-color: var(--accent-hover);
+  box-shadow: 0 0 30px var(--accent-glow);
+}
+
+.reviewBtn {
+  color: var(--text-muted);
+  text-decoration: underline;
+  font-size: 0.9rem;
+}
+.reviewBtn:hover {
+  color: var(--text-primary);
+}
+
+.footer {
+  text-align: center;
+  margin-top: var(--spacing-xl);
+}

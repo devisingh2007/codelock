@@ -1,0 +1,49 @@
+.actionBar {
+  display: flex;
+  justify-content: center;
+  gap: var(--spacing-2xl);
+  padding: var(--spacing-sm) var(--spacing-lg);
+  background-color: var(--panel-bg);
+  border-top: 1px solid var(--panel-border);
+}
+
+.actionBtn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--spacing-xs);
+  color: var(--text-secondary);
+  font-size: 0.75rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  transition: all 0.2s;
+}
+
+.iconWrapper {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: transparent;
+  transition: all 0.2s;
+}
+
+.actionBtn:hover {
+  color: var(--text-primary);
+}
+
+.actionBtn:hover .iconWrapper {
+  background-color: rgba(255, 255, 255, 0.05);
+}
+
+.actionBtn.active {
+  color: var(--accent-color);
+}
+
+.actionBtn.active .iconWrapper {
+  background-color: var(--accent-glow);
+  box-shadow: 0 0 10px var(--accent-glow);
+}

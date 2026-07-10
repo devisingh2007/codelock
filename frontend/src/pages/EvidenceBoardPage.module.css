@@ -1,0 +1,164 @@
+.pageLayout {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  overflow: hidden;
+}
+
+.boardContainer {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  background-color: var(--bg-color);
+  position: relative;
+}
+
+.boardHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--spacing-lg) var(--spacing-2xl);
+  background-color: rgba(10, 14, 26, 0.95);
+  border-bottom: 1px solid var(--panel-border);
+  z-index: 10;
+}
+
+.backBtn {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  letter-spacing: 0.1em;
+  transition: color 0.2s;
+}
+
+.backBtn:hover {
+  color: var(--accent-color);
+}
+
+.filters {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+}
+
+.filterChip {
+  background-color: transparent;
+  border: 1px solid var(--panel-border);
+  color: var(--text-secondary);
+  padding: 4px 12px;
+  border-radius: 16px;
+  font-size: 0.8rem;
+  font-family: var(--font-mono);
+  transition: all 0.2s;
+}
+
+.filterChip:hover {
+  border-color: var(--text-primary);
+  color: var(--text-primary);
+}
+
+.activeFilter {
+  background-color: rgba(242, 193, 78, 0.1);
+  border-color: var(--accent-color);
+  color: var(--accent-color);
+}
+
+.corkboard {
+  flex: 1;
+  position: relative;
+  /* Simulating a dark corkboard texture with gradients */
+  background: 
+    linear-gradient(rgba(0,0,0,0.8), rgba(0,0,0,0.8)),
+    radial-gradient(circle, #3a2e22 0%, #1a1510 100%);
+  overflow: auto;
+  padding: 40px;
+}
+
+.stringLayer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.clueCard {
+  position: absolute;
+  width: 250px;
+  background-color: #fdfbf7; /* Off-white index card */
+  color: #1a1a1a;
+  padding: var(--spacing-lg);
+  border-radius: 2px;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+  z-index: 2;
+  transition: transform 0.2s, z-index 0.2s;
+  cursor: grab;
+}
+
+.clueCard:hover {
+  z-index: 10;
+  transform: scale(1.05) rotate(0deg) !important;
+}
+
+.pushpin {
+  position: absolute;
+  top: 8px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 12px;
+  height: 12px;
+  background-color: var(--danger-color);
+  border-radius: 50%;
+  box-shadow: inset -2px -2px 4px rgba(0,0,0,0.5), 0 5px 5px rgba(0,0,0,0.3);
+}
+
+.pushpin::after {
+  content: '';
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 4px;
+  height: 4px;
+  background-color: rgba(255,255,255,0.4);
+  border-radius: 50%;
+}
+
+.cardHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: var(--spacing-md);
+  margin-bottom: var(--spacing-xs);
+}
+
+.importanceBadge {
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  background-color: #333;
+  color: #fff;
+  padding: 2px 6px;
+  border-radius: 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.statusTag {
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  font-weight: 700;
+  border: 1px solid;
+  padding: 2px 6px;
+  border-radius: 4px;
+  text-transform: uppercase;
+}
+
+.cardFooter {
+  margin-top: var(--spacing-md);
+  border-top: 1px solid #ddd;
+  padding-top: var(--spacing-xs);
+}
