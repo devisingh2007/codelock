@@ -3,6 +3,10 @@ const User = require("../models/User");
 const GameRoom = require("../models/GameRoom");
 const ChatMessage = require("../models/ChatMessage");
 
+// Module-level io instance (set when initSocket is called)
+let ioInstance = null;
+
+
 /**
  * Rate Limiter – simple in-memory per-socket message throttle.
  * Allows MAX_MESSAGES messages per WINDOW_MS window.
@@ -243,7 +247,20 @@ const initSocket = (server) => {
     });
   });
 
+  ioInstance = io;
   return io;
 };
 
-module.exports = { initSocket };
+module.exports = {
+  initSocket,
+  get io() {
+    // Returns a no-op proxy if socket not yet initialized (e.g., during HTTP-only tests)
+    if (!ioInstance) {
+      return {
+        emit: () => {},
+        to: () => ({ emit: () => {} }),
+      };
+    }
+    return ioInstance;
+  },
+};
