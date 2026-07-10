@@ -189,6 +189,14 @@ const GameStateSchema = new mongoose.Schema(
     /** History of phase transitions and actions (Phase 7) */
     history: { type: [HistoryEventSchema], default: [] },
 
+    /** Final resolution fields (Phase 10) */
+    finalVerdict: { type: String, default: null },
+    winner: { type: String, default: null },
+    completedAt: { type: Date, default: null },
+    finalReveal: { type: mongoose.Schema.Types.Mixed, default: null },
+    summary: { type: mongoose.Schema.Types.Mixed, default: null },
+    resolutionStatus: { type: String, default: null },
+
     /** Touched on every mutation – used for TTL */
     lastUpdated: {
       type: Date,
