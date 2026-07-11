@@ -32,6 +32,13 @@ export function useVoiceChat(roomCode, activePlayers, onSpeakerUpdate) {
 
     const startLocalStream = async () => {
       try {
+        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+          const errMsg = "Microphone access requires a secure context (HTTPS or http://localhost). If you are accessing via IP, please use localhost:5173 instead.";
+          console.error(errMsg);
+          alert(errMsg);
+          setVoiceConnected(false);
+          return;
+        }
         const stream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
         localStreamRef.current = stream;
         setVoiceConnected(true);
@@ -44,6 +51,11 @@ export function useVoiceChat(roomCode, activePlayers, onSpeakerUpdate) {
       } catch (err) {
         console.error('Failed to get local microphone stream:', err);
         setVoiceConnected(false);
+        if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
+          alert("Microphone permission was denied. Please click the lock/settings icon in your browser address bar and allow microphone access.");
+        } else {
+          alert(`Microphone Error: ${err.message}`);
+        }
       }
     };
 
