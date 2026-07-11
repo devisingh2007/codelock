@@ -9,7 +9,7 @@ import InvestigationFeed from '../components/InvestigationFeed';
 import PlayerCard from '../components/PlayerCard';
 import EvidenceCard from '../components/EvidenceCard';
 import { useVoiceChat } from '../hooks/useVoiceChat';
-import { Settings, User, Clock, Shield, FileText, Database, Fingerprint, Lock } from 'lucide-react';
+import { Settings, User, Clock, Shield, FileText, Database, Fingerprint, Lock, Mic, MicOff } from 'lucide-react';
 import styles from './GamePage.module.css';
 
 const iconMap = {
