@@ -115,8 +115,8 @@ const deleteRoom = async (roomCode, userId) => {
   // Delete the room
   await GameRoom.deleteOne({ _id: room._id });
 
-  // Delete any associated GameState
-  await GameState.deleteMany({ roomId: room._id });
+  // Delete any associated GameState (roomId in GameState is the 6-char roomCode)
+  await GameState.deleteMany({ roomId: room.roomCode });
 
   // Socket emit on deletion
   // io.to(roomCode).emit('room-deleted', { roomCode })
