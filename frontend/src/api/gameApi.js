@@ -452,6 +452,64 @@ export async function getReplayReport(roomCode) {
 }
 
 export async function getClueBoard(roomCode) {
+  try {
+    const res = await fetch(`${API_BASE_URL}/api/game/${roomCode.toUpperCase()}/state`, {
+      method: 'GET',
+      headers: getHeaders()
+    });
+    if (res.ok) {
+      const data = await res.json();
+      const state = data.data || data.state;
+      if (state && state.story && state.story.crime) {
+        const story = state.story;
+        const clues = [];
+
+        // Add the murder weapon as a physical clue
+        if (story.crime.weapon) {
+          clues.push({
+            id: 'c-weapon',
+            name: story.crime.weapon,
+            type: 'Physical Evidence',
+            status: 'New',
+            importanceTier: 'High Relevance',
+            desc: `The weapon used in the crime. Found at the scene of the murder.`
+          });
+        }
+
+        // Add each suspect's motive/alibi as a witness clue
+        if (story.suspects && story.suspects.length > 0) {
+          story.suspects.slice(0, 3).forEach((s, idx) => {
+            clues.push({
+              id: `c-suspect-${idx}`,
+              name: `${s.name}'s Statement`,
+              type: 'Witness Statements',
+              status: 'New',
+              importanceTier: s.isMurderer ? 'High Relevance' : 'Decoy',
+              desc: s.background || s.alibi || `${s.name} claims: "${s.relationshipToVictim}".`
+            });
+          });
+        }
+
+        // Add timeline events as time-related clues
+        if (story.timeline && story.timeline.length > 0) {
+          story.timeline.slice(0, 2).forEach((t, idx) => {
+            clues.push({
+              id: `c-timeline-${idx}`,
+              name: `Event at ${t.time}`,
+              type: 'Time-Related',
+              status: 'Discussed',
+              importanceTier: 'Medium Relevance',
+              desc: t.event
+            });
+          });
+        }
+
+        if (clues.length > 0) return clues;
+      }
+    }
+  } catch (err) {
+    console.warn('getClueBoard API error, using mock data...', err);
+  }
   return mockClueBoard;
 }
 
