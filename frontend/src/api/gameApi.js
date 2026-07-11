@@ -412,32 +412,50 @@ export async function getRevealData(roomCode) {
       const data = await res.json();
       const state = data.data || data.state;
       if (state && state.story && state.story.crime) {
-        const killerName = state.story.crime.killer;
-        const victimName = state.story.victim.name;
-        const weapon = state.story.crime.weapon;
+        const story = state.story;
+        const killerName = story.crime.killer;
+        const victimName = story.victim?.name || 'The Victim';
+        const weapon = story.crime.weapon;
+        const motive = story.crime.summary || story.crime.motive || 'Driven by jealousy and greed.';
         const roles = state.roles || [];
         const killerRole = roles.find(r => r.roleName === killerName);
         const killerUsername = killerRole?.userId?.username;
         const displayKillerName = killerUsername ? `${killerName} (${killerUsername})` : killerName;
+
+        // Count correct votes: anyone who voted for the killer
+        let votesCorrect = 0;
+        let totalPlayers = state.players?.length || 0;
+        try {
+          const resVotes = await fetch(`${API_BASE_URL}/api/vote/vote/${roomCode.toUpperCase()}/results`, {
+            method: 'GET',
+            headers: getHeaders()
+          });
+          if (resVotes.ok) {
+            const voteData = await resVotes.json();
+            const votes = voteData.votes || {};
+            // Count votes cast for the killer's username
+            if (killerUsername) {
+              votesCorrect = votes[killerUsername] || 0;
+            }
+          }
+        } catch (vErr) {
+          console.warn('Could not fetch vote results for reveal', vErr);
+        }
+
         return {
-          killer: {
-            name: displayKillerName,
-            motive: state.story.crime.summary || 'Hidden motive.'
-          },
-          victim: {
-            name: victimName,
-            role: 'Victim',
-            weapon: weapon
-          },
+          success: votesCorrect > 0,
+          subtitle: `The ${story.setting || 'Mansion'} Murder`,
+          murdererName: displayKillerName,
+          narrative: `${killerName} used ${weapon} to silence ${victimName}. Motive: "${motive}"`,
+          victim: { name: victimName, role: 'Victim', weapon },
           stats: {
-            accuracy: 100,
-            rank: 'Master Detective',
-            timeToSolve: '15m 00s'
+            votesCorrect,
+            totalPlayers,
+            evidenceFound: 2,
+            totalEvidence: 4,
+            timeTaken: '—'
           },
-          timelineOfTruth: state.story.timeline.map(t => ({
-            time: t.time,
-            event: t.event
-          }))
+          timelineOfTruth: (story.timeline || []).map(t => ({ time: t.time, event: t.event }))
         };
       }
     }
