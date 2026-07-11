@@ -47,15 +47,13 @@ const GamePage = () => {
       try {
         const state = await getLobbyState(roomCode);
         const evs = await getEvidence(roomCode);
-        const objs = await getObjectives(roomCode);
         const time = await getTimeline(roomCode);
 
         setRoomState(state);
         setEvidence(evs);
-        setObjectives(objs);
         setTimeline(time);
 
-        // Fetch location details from the raw GameState
+        // Fetch location and objectives details from the raw GameState
         try {
           const rawState = await getGameState(roomCode);
           if (rawState && rawState.story) {
@@ -65,6 +63,21 @@ const GamePage = () => {
               setLocationName(rawState.story.title);
             }
           }
+          
+          // Dynamic objectives based on phase
+          const phase = rawState?.phase || 'investigation';
+          const dynamicObjectives = phase === 'investigation' ? [
+            { id: 'obj1', text: 'Find clues about the murder weapon.', completed: evs.length > 0 },
+            { id: 'obj2', text: "Determine the killer's motive.", completed: false },
+            { id: 'obj3', text: 'Interrogate the AI Game Master.', completed: false }
+          ] : phase === 'voting' ? [
+            { id: 'obj1', text: 'Review the evidence log.', completed: true },
+            { id: 'obj2', text: 'Cast your vote for the prime suspect.', completed: false }
+          ] : [
+            { id: 'obj1', text: 'Wait for the next phase to begin.', completed: false }
+          ];
+          setObjectives(dynamicObjectives);
+
         } catch (rawErr) {
           console.warn("Could not load raw game state story details:", rawErr);
         }
@@ -138,6 +151,21 @@ const GamePage = () => {
       
       else if (event === 'sync-state' || event === 'state-changed') {
         const state = payload.state;
+        if (state) {
+          const phase = state.phase || 'investigation';
+          const dynamicObjectives = phase === 'investigation' ? [
+            { id: 'obj1', text: 'Find clues about the murder weapon.', completed: state.story?.crime?.weapon ? true : false },
+            { id: 'obj2', text: "Determine the killer's motive.", completed: false },
+            { id: 'obj3', text: 'Interrogate the AI Game Master.', completed: false }
+          ] : phase === 'voting' ? [
+            { id: 'obj1', text: 'Review the evidence log.', completed: true },
+            { id: 'obj2', text: 'Cast your vote for the prime suspect.', completed: false }
+          ] : [
+            { id: 'obj1', text: 'Wait for the next phase to begin.', completed: false }
+          ];
+          setObjectives(dynamicObjectives);
+        }
+
         if (state && state.story && state.story.victim) {
           if (state.story.timeline) {
             setTimeline(state.story.timeline.map(t => ({
