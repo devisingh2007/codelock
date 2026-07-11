@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { getLobbyState, connectSocket, disconnectSocket, sendMessage, generateMysteryForRoomCode } from '../api/gameApi';
+import { useVoiceChat } from '../hooks/useVoiceChat';
 import TopNavBar from '../components/TopNavBar';
 import PlayerCard from '../components/PlayerCard';
 import SuspicionMeter from '../components/SuspicionMeter';
@@ -18,6 +19,14 @@ const LobbyPage = () => {
   const [error, setError] = useState('');
   const [starting, setStarting] = useState(false);
   const [selectedDifficulty, setSelectedDifficulty] = useState(localStorage.getItem('difficulty') || 'medium');
+  const [speakers, setSpeakers] = useState({});
+  const [userSocketMap, setUserSocketMap] = useState({});
+
+  const { isMuted, voiceConnected, toggleMute, peerMicStates } = useVoiceChat(
+    roomCode,
+    roomState?.players || [],
+    (updatedSpeakers) => setSpeakers(updatedSpeakers)
+  );
 
   useEffect(() => {
     // 1. Fetch initial state
@@ -57,11 +66,23 @@ const LobbyPage = () => {
             ...history
           ]);
         }
+        if (payload.activeSockets) {
+          const initialMap = {};
+          payload.activeSockets.forEach(s => {
+            if (s.username) initialMap[s.username] = s.socketId;
+          });
+          setUserSocketMap(initialMap);
+        }
       }
 
       else if (event === 'user-joined') {
-        // Refresh players list
         fetchState();
+        if (payload.username && payload.socketId) {
+          setUserSocketMap(prev => ({
+            ...prev,
+            [payload.username]: payload.socketId
+          }));
+        }
         setChatMessages(prev => [
           ...prev,
           { id: `join-${Date.now()}`, sender: 'System', message: `${payload.username} has entered the room.` }
@@ -69,8 +90,14 @@ const LobbyPage = () => {
       }
 
       else if (event === 'user-left') {
-        // Refresh players list
         fetchState();
+        if (payload.username) {
+          setUserSocketMap(prev => {
+            const next = { ...prev };
+            delete next[payload.username];
+            return next;
+          });
+        }
         setChatMessages(prev => [
           ...prev,
           { id: `left-${Date.now()}`, sender: 'System', message: `${payload.username} has disconnected.` }
@@ -148,11 +175,24 @@ const LobbyPage = () => {
   // Resolve the current player's display name from localStorage if available
   const savedPlayerName = localStorage.getItem('username') || localStorage.getItem('playerName');
   const mappedPlayers = players.map(p => {
-    if (p.isMe && savedPlayerName) {
-      const initials = savedPlayerName.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
-      return { ...p, name: savedPlayerName, initials };
+    const isMe = p.isMe || p.name === savedPlayerName;
+    const displayName = isMe && savedPlayerName ? savedPlayerName : p.name || p.username;
+    const initials = displayName.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
+    
+    const isSpeaking = speakers[displayName] === true;
+    const status = isSpeaking ? 'COMMUNICATING' : (p.status || 'READY');
+    
+    let micStatus = 'on';
+    if (isMe) {
+      micStatus = isMuted ? 'muted' : 'on';
+    } else {
+      const socketId = userSocketMap[displayName];
+      if (socketId) {
+        micStatus = peerMicStates[socketId] === true ? 'muted' : 'on';
+      }
     }
-    return p;
+
+    return { ...p, name: displayName, initials, status, micStatus, isMe };
   });
 
   const me = mappedPlayers.find(p => p.isMe);
@@ -243,6 +283,28 @@ const LobbyPage = () => {
           <div className={styles.startContainer}>
             <div className={styles.playerCount}>
               <span className="font-mono">{mappedPlayers.length}/8 PLAYERS READY</span>
+              <div className="font-mono text-xs text-muted" style={{ marginTop: '8px' }}>
+                VOICE: <span className={voiceConnected ? 'text-accent' : 'text-danger'}>{voiceConnected ? 'ONLINE' : 'OFFLINE'}</span>
+              </div>
+              <button 
+                type="button"
+                className={`${styles.lobbyCommsBtn} ${isMuted ? styles.lobbyCommsMuted : ''}`}
+                onClick={toggleMute}
+                style={{
+                  marginTop: '10px',
+                  width: '100%',
+                  padding: '6px 12px',
+                  fontSize: '0.75rem',
+                  fontFamily: 'monospace',
+                  background: 'transparent',
+                  border: isMuted ? '1px solid #b91c1c' : '1px solid var(--panel-border, #3a2228)',
+                  color: isMuted ? '#b91c1c' : 'var(--text-secondary, #888)',
+                  borderRadius: '4px',
+                  cursor: 'pointer'
+                }}
+              >
+                {isMuted ? 'UNMUTE MIC' : 'MUTE MIC'}
+              </button>
             </div>
             {isHost ? (
               <button

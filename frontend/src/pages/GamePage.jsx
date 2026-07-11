@@ -391,6 +391,13 @@ const GamePage = () => {
                   <div key={p.id} className={`${styles.playerTag} ${p.status === 'COMMUNICATING' ? styles.playerSpeaking : ''} ${p.status === 'ELIMINATED' ? styles.playerEliminated : ''}`}>
                     <span className={styles.playerStatusDot} />
                     <span>{p.name} ({p.status})</span>
+                    <span style={{ marginLeft: '4px', display: 'flex', alignItems: 'center' }}>
+                      {p.micStatus === 'on' ? (
+                        <Mic size={10} style={{ color: '#27ae60' }} />
+                      ) : (
+                        <MicOff size={10} style={{ color: '#e74c3c' }} />
+                      )}
+                    </span>
                   </div>
                 ))}
               </div>
