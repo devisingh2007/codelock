@@ -572,3 +572,23 @@ export async function getProfile() {
   }
   return mockProfile;
 }
+
+export async function startVoting(roomCode) {
+  const res = await fetch(`${API_BASE_URL}/api/vote/game/${roomCode.toUpperCase()}/start-voting`, {
+    method: 'POST',
+    headers: getHeaders()
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error || 'Failed to start voting phase');
+  return data;
+}
+
+export async function endVoting(roomCode) {
+  const res = await fetch(`${API_BASE_URL}/api/vote/game/${roomCode.toUpperCase()}/end-voting`, {
+    method: 'POST',
+    headers: getHeaders()
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error || 'Failed to end voting phase');
+  return data;
+}

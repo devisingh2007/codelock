@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { Mic, MicOff } from 'lucide-react';
 import Phaser from 'phaser';
 import { MeetingScene } from '../game/MeetingScene';
-import { getLobbyState, getGameState, getSuspects, castVote, connectSocket, disconnectSocket } from '../api/gameApi';
+import { getLobbyState, getGameState, getSuspects, castVote, connectSocket, disconnectSocket, startVoting, endVoting } from '../api/gameApi';
 import { useVoiceChat } from '../hooks/useVoiceChat';
 import LeftSidebar from '../components/LeftSidebar';
 import styles from './MeetingRoomPage.module.css';
@@ -67,6 +67,17 @@ const MeetingRoomPage = () => {
         // Get murderer name from game state
         if (gameState?.story?.crime?.killer) {
           setMurdererName(gameState.story.crime.killer);
+        }
+
+        // Host transitions phase to 'voting' on backend
+        const me = mappedPlayers.find(p => p.isMe);
+        if (me && me.isHost) {
+          try {
+            await startVoting(roomCode);
+            console.log('[MeetingRoomPage] Transitioned phase to voting on backend.');
+          } catch (vErr) {
+            console.warn('[MeetingRoomPage] startVoting failed:', vErr.message);
+          }
         }
 
         setLoading(false);
@@ -222,6 +233,12 @@ const MeetingRoomPage = () => {
     const result = playerWin ? 'players_win' : 'murderer_wins';
     setGameResult(result);
 
+    // Call endVoting on backend if host to resolve state
+    const me = players.find(p => p.isMe);
+    if (me && me.isHost) {
+      endVoting(roomCode).catch(e => console.warn('[MeetingRoomPage] endVoting failed:', e.message));
+    }
+
     // Show result in Phaser scene
     if (sceneRef.current) {
       sceneRef.current.showResult(playerWin, murdererName);
@@ -231,7 +248,7 @@ const MeetingRoomPage = () => {
     setTimeout(() => {
       navigate(`/game/${roomCode}/reveal`);
     }, 4500);
-  }, [murdererName, gameResult, roomCode, navigate]);
+  }, [murdererName, gameResult, roomCode, navigate, players]);
 
   // ─── Chat ─────────────────────────────────────────────────────────────────────
   const handleSendChat = async (e) => {
