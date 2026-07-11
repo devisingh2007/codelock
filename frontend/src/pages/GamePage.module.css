@@ -53,10 +53,26 @@
   font-family: var(--font-mono);
   font-size: 0.8rem;
   border-radius: var(--border-radius-sm);
+  cursor: pointer;
+  transition: all 0.2s ease;
 }
 .commsBtn:hover {
   color: var(--text-primary);
   border-color: var(--text-primary);
+}
+
+.commsMuted {
+  border-color: var(--danger-color);
+  color: var(--danger-color);
+}
+.commsMuted:hover {
+  background-color: var(--danger-glow);
+  color: #fff;
+  border-color: var(--danger-color);
+}
+
+.voiceStatus {
+  color: var(--text-muted);
 }
 
 .mainContent {

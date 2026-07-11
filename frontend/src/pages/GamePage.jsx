@@ -6,6 +6,7 @@ import BottomActionBar from '../components/BottomActionBar';
 import InvestigationFeed from '../components/InvestigationFeed';
 import PlayerCard from '../components/PlayerCard';
 import EvidenceCard from '../components/EvidenceCard';
+import { useVoiceChat } from '../hooks/useVoiceChat';
 import { Settings, User, Clock, Shield, FileText, Database, Fingerprint, Lock } from 'lucide-react';
 import styles from './GamePage.module.css';
 
@@ -28,6 +29,15 @@ const GamePage = () => {
   const [activeTab, setActiveTab] = useState('evidence');
   const [chatInput, setChatInput] = useState('');
   const [selectedEvidence, setSelectedEvidence] = useState(null);
+  const [userSocketMap, setUserSocketMap] = useState({});
+  const [speakers, setSpeakers] = useState({});
+
+  // Voice Chat Hook Integration
+  const { isMuted, voiceConnected, toggleMute, peerMicStates } = useVoiceChat(
+    roomCode,
+    roomState?.players || [],
+    (updatedSpeakers) => setSpeakers(updatedSpeakers)
+  );
 
   useEffect(() => {
     const fetchData = async () => {
@@ -61,6 +71,34 @@ const GamePage = () => {
           time: new Date(h.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
         }));
         setMessages(history);
+
+        // Map initial connected players to their socket IDs
+        if (payload.activeSockets) {
+          const initialMap = {};
+          payload.activeSockets.forEach(s => {
+            if (s.username) initialMap[s.username] = s.socketId;
+          });
+          setUserSocketMap(initialMap);
+        }
+      }
+      
+      else if (event === 'user-joined') {
+        if (payload.username && payload.socketId) {
+          setUserSocketMap(prev => ({
+            ...prev,
+            [payload.username]: payload.socketId
+          }));
+        }
+      }
+
+      else if (event === 'user-left') {
+        if (payload.username) {
+          setUserSocketMap(prev => {
+            const next = { ...prev };
+            delete next[payload.username];
+            return next;
+          });
+        }
       }
       
       else if (event === 'room-message') {
@@ -125,13 +163,28 @@ const GamePage = () => {
   if (!roomState) return <div className={styles.loading}>Connecting to HUD...</div>;
 
   const { caseInfo, players } = roomState;
-  const savedPlayerName = localStorage.getItem('playerName');
+  const savedPlayerName = localStorage.getItem('playerName') || localStorage.getItem('username');
+  
   const mappedPlayers = players.map(p => {
-    if (p.isMe && savedPlayerName) {
-      const initials = savedPlayerName.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
-      return { ...p, name: savedPlayerName, initials };
+    const isMe = p.name === savedPlayerName || p.isMe;
+    const socketId = userSocketMap[p.name];
+    
+    // speaking status
+    const isSpeaking = speakers[p.name] === true;
+    const status = isSpeaking ? 'COMMUNICATING' : p.status;
+
+    // mic status
+    let micStatus = p.micStatus;
+    if (isMe) {
+      micStatus = isMuted ? 'muted' : 'on';
+    } else if (socketId) {
+      micStatus = peerMicStates[socketId] === true ? 'muted' : 'on';
     }
-    return p;
+
+    const displayName = isMe && savedPlayerName ? savedPlayerName : p.name;
+    const initials = displayName.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
+
+    return { ...p, name: displayName, initials, status, micStatus };
   });
 
   return (
@@ -144,7 +197,15 @@ const GamePage = () => {
           {mappedPlayers.map(p => <PlayerCard key={p.id} player={p} />)}
         </div>
         <div className={styles.sidebarFooter}>
-          <button className={styles.commsBtn}>COMMS SETTINGS</button>
+          <div className={`${styles.voiceStatus} font-mono text-xs mb-2 text-center`}>
+            VOICE CONMS: <span className={voiceConnected ? 'text-accent' : 'text-danger'}>{voiceConnected ? 'CONNECTED' : 'OFFLINE'}</span>
+          </div>
+          <button 
+            className={`${styles.commsBtn} ${isMuted ? styles.commsMuted : ''}`}
+            onClick={toggleMute}
+          >
+            {isMuted ? 'UNMUTE MIC' : 'MUTE MIC'}
+          </button>
         </div>
       </aside>
 
