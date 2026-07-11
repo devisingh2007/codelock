@@ -211,6 +211,16 @@ export function disconnectSocket() {
 }
 
 // REST-style fallbacks and integrations
+export async function getGameState(roomCode) {
+  const res = await fetch(`${API_BASE_URL}/api/game/${roomCode.toUpperCase()}/state`, {
+    method: 'GET',
+    headers: getHeaders()
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error || 'Failed to fetch game state');
+  return data.data || data.state;
+}
+
 export async function getCase() {
   return mockCase;
 }
@@ -550,9 +560,9 @@ export async function getProfile() {
         level: 1,
         stats: mockProfile.stats,
         preferredAsset: mockProfile.preferredAsset,
-        achievements: mockProfile.accolades.map(a => ({
-          name: a.title,
-          desc: 'Achievement unlocked from activities.',
+        achievements: (mockProfile.achievements || []).map(a => ({
+          name: a.name,
+          desc: a.desc,
           unlocked: a.unlocked
         }))
       };
