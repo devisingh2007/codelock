@@ -494,3 +494,55 @@
 @keyframes spin {
   to { transform: rotate(360deg); }
 }
+
+.voiceControlBar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5rem 0.75rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  background-color: #0d0508;
+}
+
+.smallCommsBtn {
+  background-color: transparent;
+  border: 1px solid var(--panel-border, #3a2228);
+  color: var(--text-secondary, #888877);
+  padding: 4px 10px;
+  font-family: inherit;
+  font-size: 0.7rem;
+  border-radius: 3px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.smallCommsBtn:hover {
+  border-color: #fff;
+  color: #fff;
+}
+
+.commsMuted {
+  border-color: #b91c1c;
+  color: #b91c1c;
+}
+
+.speakingChip {
+  border-color: var(--accent-color, #f1c40f) !important;
+  box-shadow: 0 0 8px rgba(241, 196, 15, 0.4);
+}
+
+.micIconWrapper {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+}
+
+.micOn {
+  color: #27ae60;
+}
+
+.micOff {
+  color: #e74c3c;
+}
+
+

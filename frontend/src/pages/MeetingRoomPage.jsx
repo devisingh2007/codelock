@@ -1,8 +1,10 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { Mic, MicOff } from 'lucide-react';
 import Phaser from 'phaser';
 import { MeetingScene } from '../game/MeetingScene';
 import { getLobbyState, getGameState, getSuspects, castVote, connectSocket, disconnectSocket } from '../api/gameApi';
+import { useVoiceChat } from '../hooks/useVoiceChat';
 import LeftSidebar from '../components/LeftSidebar';
 import styles from './MeetingRoomPage.module.css';
 
@@ -26,6 +28,15 @@ const MeetingRoomPage = () => {
   const [chatMessages, setChatMessages] = useState([]);
   const [chatInput, setChatInput] = useState('');
   const [loading, setLoading] = useState(true);
+  const [speakers, setSpeakers] = useState({});
+  const [userSocketMap, setUserSocketMap] = useState({});
+
+  // Voice Chat Hook Integration
+  const { isMuted, voiceConnected, toggleMute, peerMicStates } = useVoiceChat(
+    roomCode,
+    players || [],
+    (updatedSpeakers) => setSpeakers(updatedSpeakers)
+  );
 
   // ─── Load initial data ────────────────────────────────────────────────────────
   useEffect(() => {
@@ -70,7 +81,36 @@ const MeetingRoomPage = () => {
   // ─── Socket connection ────────────────────────────────────────────────────────
   useEffect(() => {
     const socket = connectSocket(roomCode, (event, payload) => {
-      if (event === 'room-message') {
+      if (event === 'joined-room') {
+        if (payload.activeSockets) {
+          const initialMap = {};
+          payload.activeSockets.forEach(s => {
+            if (s.username) initialMap[s.username] = s.socketId;
+          });
+          setUserSocketMap(initialMap);
+        }
+      }
+
+      else if (event === 'user-joined') {
+        if (payload.username && payload.socketId) {
+          setUserSocketMap(prev => ({
+            ...prev,
+            [payload.username]: payload.socketId
+          }));
+        }
+      }
+
+      else if (event === 'user-left') {
+        if (payload.username) {
+          setUserSocketMap(prev => {
+            const next = { ...prev };
+            delete next[payload.username];
+            return next;
+          });
+        }
+      }
+
+      else if (event === 'room-message') {
         const newMsg = {
           id: `msg-${Date.now()}`,
           sender: payload.sender?.username || payload.senderUsername || 'Unknown',
@@ -231,13 +271,33 @@ const MeetingRoomPage = () => {
 
         {/* Player List (compact) */}
         <div className={styles.playerStrip}>
-          {players.map((p, i) => (
-            <div key={p.id} className={`${styles.playerChip} ${p.isMe ? styles.meChip : ''}`}>
-              <span className={styles.playerInitials} style={{ background: `hsl(${i * 60}, 70%, 35%)` }}>{p.initials}</span>
-              <span className={styles.playerChipName}>{p.isMe ? `${p.name} (YOU)` : p.name}</span>
-              {hasVoted && myVote === p.name && <span className={styles.votedTag}>VOTED</span>}
-            </div>
-          ))}
+          {players.map((p, i) => {
+            const isSpeaking = speakers[p.name] === true;
+            let micStatus = 'on';
+            if (p.isMe) {
+              micStatus = isMuted ? 'muted' : 'on';
+            } else {
+              const socketId = userSocketMap[p.name];
+              if (socketId) {
+                micStatus = peerMicStates[socketId] === true ? 'muted' : 'on';
+              }
+            }
+
+            return (
+              <div key={p.id} className={`${styles.playerChip} ${p.isMe ? styles.meChip : ''} ${isSpeaking ? styles.speakingChip : ''}`}>
+                <span className={styles.playerInitials} style={{ background: `hsl(${i * 60}, 70%, 35%)` }}>{p.initials}</span>
+                <span className={styles.playerChipName}>{p.isMe ? `${p.name} (YOU)` : p.name}</span>
+                <div className={styles.micIconWrapper}>
+                  {micStatus === 'on' ? (
+                    <Mic size={12} className={styles.micOn} />
+                  ) : (
+                    <MicOff size={12} className={styles.micOff} />
+                  )}
+                </div>
+                {hasVoted && myVote === p.name && <span className={styles.votedTag}>VOTED</span>}
+              </div>
+            );
+          })}
         </div>
 
         {/* Messages */}
@@ -252,6 +312,20 @@ const MeetingRoomPage = () => {
               <p className={styles.chatContent}>{msg.content}</p>
             </div>
           ))}
+        </div>
+
+        {/* Voice control status strip */}
+        <div className={styles.voiceControlBar}>
+          <span className="font-mono text-xs text-muted">
+            VOICE: <span className={voiceConnected ? 'text-accent' : 'text-danger'}>{voiceConnected ? 'ONLINE' : 'OFFLINE'}</span>
+          </span>
+          <button 
+            type="button"
+            className={`${styles.smallCommsBtn} ${isMuted ? styles.commsMuted : ''}`}
+            onClick={toggleMute}
+          >
+            {isMuted ? 'CONNECT MIC' : 'MUTE MIC'}
+          </button>
         </div>
 
         {/* Chat Input */}
