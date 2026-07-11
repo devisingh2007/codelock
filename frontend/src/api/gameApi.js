@@ -196,8 +196,8 @@ export function connectSocket(roomCode, onEvent) {
     if (onEvent) onEvent('phase-advanced', data);
   });
   
-  socket.on('state-error', (data) => {
-    if (onEvent) onEvent('state-error', data);
+  socket.on('player-moved', (data) => {
+    if (onEvent) onEvent('player-moved', data);
   });
   
   return socket;

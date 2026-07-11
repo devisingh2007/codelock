@@ -262,6 +262,14 @@ const initSocket = (server) => {
       });
     });
 
+    socket.on("player-move", ({ roomCode, x, y }) => {
+      socket.to(roomCode.toUpperCase()).emit("player-moved", {
+        username: user.username,
+        x,
+        y
+      });
+    });
+
     // ─────────────────────────────────────────────
     // disconnect / cleanup
     // ─────────────────────────────────────────────

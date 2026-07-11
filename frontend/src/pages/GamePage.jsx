@@ -1,6 +1,8 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { getLobbyState, getEvidence, getObjectives, getTimeline, sendMessage, connectSocket, disconnectSocket, getGameState } from '../api/gameApi';
+import Phaser from 'phaser';
+import { InvestigationScene } from '../game/InvestigationScene';
+import { getLobbyState, getEvidence, getObjectives, getTimeline, sendMessage, connectSocket, disconnectSocket, getGameState, getSocket } from '../api/gameApi';
 import LeftSidebar from '../components/LeftSidebar';
 import BottomActionBar from '../components/BottomActionBar';
 import InvestigationFeed from '../components/InvestigationFeed';
@@ -21,6 +23,10 @@ const GamePage = () => {
   const { roomCode } = useParams();
   const navigate = useNavigate();
   
+  const gameRef = useRef(null);
+  const sceneRef = useRef(null);
+  const phaserGameRef = useRef(null);
+
   const [roomState, setRoomState] = useState(null);
   const [messages, setMessages] = useState([]);
   const [evidence, setEvidence] = useState([]);
@@ -133,6 +139,17 @@ const GamePage = () => {
             delete next[payload.username];
             return next;
           });
+          
+          // Remove remote player from Phaser scene
+          if (sceneRef.current) {
+            sceneRef.current.removeRemotePlayer(payload.username);
+          }
+        }
+      }
+      
+      else if (event === 'player-moved') {
+        if (sceneRef.current && payload.username) {
+          sceneRef.current.updateRemotePlayerPos(payload.username, payload.x, payload.y);
         }
       }
       
@@ -190,6 +207,68 @@ const GamePage = () => {
       clearInterval(timer);
     };
   }, [roomCode]);
+
+  useEffect(() => {
+    if (!roomState || !gameRef.current || phaserGameRef.current) return;
+
+    const currentUsername = localStorage.getItem('username');
+
+    const handlePlayerMove = (x, y) => {
+      const socket = getSocket();
+      if (socket) {
+        socket.emit('player-move', { roomCode, x, y });
+      }
+    };
+
+    const handleInteractNPC = (npcName) => {
+      setChatInput(`I want to interrogate ${npcName}`);
+    };
+
+    const handleInspectClue = (clueId, clueName) => {
+      setChatInput(`I want to inspect the ${clueName}`);
+    };
+
+    const config = {
+      type: Phaser.AUTO,
+      width: gameRef.current.clientWidth || 600,
+      height: 480,
+      backgroundColor: '#0d0508',
+      parent: gameRef.current,
+      physics: {
+        default: 'arcade',
+        arcade: { debug: false }
+      },
+      scene: [InvestigationScene],
+      callbacks: {
+        postBoot: (game) => {
+          const scene = game.scene.getScene('InvestigationScene');
+          sceneRef.current = scene;
+        }
+      }
+    };
+
+    const game = new Phaser.Game(config);
+    phaserGameRef.current = game;
+
+    game.events.on('ready', () => {
+      game.scene.start('InvestigationScene', {
+        roomCode,
+        username: currentUsername || 'Investigator',
+        players: roomState.players || [],
+        onPlayerMove: handlePlayerMove,
+        onInteractNPC: handleInteractNPC,
+        onInspectClue: handleInspectClue
+      });
+      sceneRef.current = game.scene.getScene('InvestigationScene');
+    });
+
+    return () => {
+      if (phaserGameRef.current) {
+        phaserGameRef.current.destroy(true);
+        phaserGameRef.current = null;
+      }
+    };
+  }, [roomState]);
 
   const handleSendMessage = async (e) => {
     e.preventDefault();
@@ -295,29 +374,37 @@ const GamePage = () => {
         </header>
 
         <div className={styles.centerColumns}>
-          {/* Center Column - Active Players & Comms Status */}
+          {/* Center Column - 2D Investigation Area */}
           <section className={styles.feedColumn}>
             <div className={styles.centerHeader}>
-              <h2 className="font-serif text-xl mb-1 text-accent">Active Investigators</h2>
-              <p className="text-xs text-muted mb-4">Monitor squad status and microphone links.</p>
+              <h2 className="font-serif text-xl mb-1 text-accent">Investigation Zone (2D RPG)</h2>
+              <p className="text-xs text-muted mb-3">WASD/Click to walk. Proximity triggers NPC dialogues & clue inspections.</p>
             </div>
             
-            <div className={styles.playerGrid}>
-              {mappedPlayers.map(p => (
-                <PlayerCard key={p.id} player={p} />
-              ))}
-            </div>
+            {/* Phaser Canvas mount point */}
+            <div ref={gameRef} className={styles.phaserCanvas} />
 
+            {/* Compact players strip & voice controls */}
             <div className={styles.commsDashboard}>
-              <div className={`${styles.voiceStatus} font-mono text-xs mb-2`}>
-                VOICE LINK: <span className={voiceConnected ? 'text-accent' : 'text-danger'}>{voiceConnected ? 'ONLINE' : 'OFFLINE'}</span>
+              <div className={styles.compactPlayerList}>
+                {mappedPlayers.map(p => (
+                  <div key={p.id} className={`${styles.playerTag} ${p.status === 'COMMUNICATING' ? styles.playerSpeaking : ''} ${p.status === 'ELIMINATED' ? styles.playerEliminated : ''}`}>
+                    <span className={styles.playerStatusDot} />
+                    <span>{p.name} ({p.status})</span>
+                  </div>
+                ))}
               </div>
-              <button 
-                className={`${styles.commsBtn} ${isMuted ? styles.commsMuted : ''}`}
-                onClick={toggleMute}
-              >
-                {isMuted ? 'CONNECT MICROPHONE' : 'MUTE MICROPHONE'}
-              </button>
+              <div className={styles.voiceControlBar}>
+                <span className="font-mono text-xs text-muted">
+                  VOICE LINK: <span className={voiceConnected ? 'text-accent' : 'text-danger'}>{voiceConnected ? 'ONLINE' : 'OFFLINE'}</span>
+                </span>
+                <button 
+                  className={`${styles.smallCommsBtn} ${isMuted ? styles.commsMuted : ''}`}
+                  onClick={toggleMute}
+                >
+                  {isMuted ? 'CONNECT MIC' : 'MUTE MIC'}
+                </button>
+              </div>
             </div>
           </section>
 
