@@ -13,6 +13,7 @@
   },
   "dependencies": {
     "lucide-react": "^1.24.0",
+    "phaser": "^4.2.1",
     "react": "^19.2.7",
     "react-dom": "^19.2.7",
     "react-router-dom": "^7.18.1",

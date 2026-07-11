@@ -50,7 +50,7 @@ const BottomActionBar = ({ roomCode }) => {
 
       <button 
         className={`${styles.actionBtn} ${isActive('meeting') ? styles.active : ''}`}
-        onClick={() => navigate(`/game/${roomCode}`)}
+        onClick={() => navigate(`/game/${roomCode}/meeting`)}
       >
         <div className={styles.iconWrapper}><Users size={20} /></div>
         <span>Meeting</span>

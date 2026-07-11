@@ -13,6 +13,7 @@ import ReplayReportPage from './pages/ReplayReportPage';
 import EvidenceBoardPage from './pages/EvidenceBoardPage';
 import ProfilePage from './pages/ProfilePage';
 import SettingsPage from './pages/SettingsPage';
+import MeetingRoomPage from './pages/MeetingRoomPage';
 import './styles/theme.css';
 import './index.css';
 
@@ -31,6 +32,7 @@ function App() {
           <Route path="/game/:roomCode/board" element={<EvidenceBoardPage />} />
           <Route path="/game/:roomCode/vote" element={<VotePage />} />
           <Route path="/game/:roomCode/reveal" element={<RevealPage />} />
+          <Route path="/game/:roomCode/meeting" element={<MeetingRoomPage />} />
           <Route path="/game/:roomCode/report" element={<ReplayReportPage />} />
           <Route path="/profile" element={<ProfilePage />} />
           <Route path="/settings" element={<SettingsPage />} />

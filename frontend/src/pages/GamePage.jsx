@@ -244,23 +244,23 @@ const GamePage = () => {
 
   return (
     <div className={styles.pageLayout}>
+      {/* Left Sidebar - Chat Area */}
       <aside className={styles.sidebar}>
         <div className={styles.sidebarHeader}>
-          <div className="font-mono text-muted text-xs">CASE #{caseInfo.number} PERSONNEL</div>
+          <div className="font-mono text-muted text-xs">CASE #{caseInfo.number} COMMS</div>
         </div>
-        <div className={styles.playerList}>
-          {mappedPlayers.map(p => <PlayerCard key={p.id} player={p} />)}
-        </div>
-        <div className={styles.sidebarFooter}>
-          <div className={`${styles.voiceStatus} font-mono text-xs mb-2 text-center`}>
-            VOICE CONMS: <span className={voiceConnected ? 'text-accent' : 'text-danger'}>{voiceConnected ? 'CONNECTED' : 'OFFLINE'}</span>
-          </div>
-          <button 
-            className={`${styles.commsBtn} ${isMuted ? styles.commsMuted : ''}`}
-            onClick={toggleMute}
-          >
-            {isMuted ? 'UNMUTE MIC' : 'MUTE MIC'}
-          </button>
+        <div className={styles.chatArea}>
+          <InvestigationFeed messages={messages} />
+          <form className={styles.chatForm} onSubmit={handleSendMessage}>
+            <input 
+              type="text" 
+              className={styles.chatInput} 
+              placeholder="Message team or GM..." 
+              value={chatInput}
+              onChange={(e) => setChatInput(e.target.value)}
+            />
+            <button type="submit" className={styles.sendBtn}>SEND</button>
+          </form>
         </div>
       </aside>
 
@@ -295,19 +295,30 @@ const GamePage = () => {
         </header>
 
         <div className={styles.centerColumns}>
-          {/* Center Chat/Feed */}
+          {/* Center Column - Active Players & Comms Status */}
           <section className={styles.feedColumn}>
-            <InvestigationFeed messages={messages} />
-            <form className={styles.chatForm} onSubmit={handleSendMessage}>
-              <input 
-                type="text" 
-                className={styles.chatInput} 
-                placeholder="Message your team or game master..." 
-                value={chatInput}
-                onChange={(e) => setChatInput(e.target.value)}
-              />
-              <button type="submit" className={styles.sendBtn}>SEND</button>
-            </form>
+            <div className={styles.centerHeader}>
+              <h2 className="font-serif text-xl mb-1 text-accent">Active Investigators</h2>
+              <p className="text-xs text-muted mb-4">Monitor squad status and microphone links.</p>
+            </div>
+            
+            <div className={styles.playerGrid}>
+              {mappedPlayers.map(p => (
+                <PlayerCard key={p.id} player={p} />
+              ))}
+            </div>
+
+            <div className={styles.commsDashboard}>
+              <div className={`${styles.voiceStatus} font-mono text-xs mb-2`}>
+                VOICE LINK: <span className={voiceConnected ? 'text-accent' : 'text-danger'}>{voiceConnected ? 'ONLINE' : 'OFFLINE'}</span>
+              </div>
+              <button 
+                className={`${styles.commsBtn} ${isMuted ? styles.commsMuted : ''}`}
+                onClick={toggleMute}
+              >
+                {isMuted ? 'CONNECT MICROPHONE' : 'MUTE MICROPHONE'}
+              </button>
+            </div>
           </section>
 
           {/* Right Panel */}

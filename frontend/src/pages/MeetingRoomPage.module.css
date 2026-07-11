@@ -1,0 +1,496 @@
+.meetingLayout {
+  display: grid;
+  grid-template-columns: 280px 1fr 300px;
+  height: 100vh;
+  width: 100vw;
+  background-color: #0b0507;
+  color: #f5f5f7;
+  overflow: hidden;
+  font-family: 'Courier New', Courier, monospace;
+}
+
+/* --- Left Sidebar (Chat) --- */
+.chatSidebar {
+  border-right: 1px solid var(--panel-border, #3a2228);
+  background-color: #12070a;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+}
+
+.chatHeader {
+  padding: 1rem;
+  border-bottom: 1px solid var(--panel-border, #3a2228);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.liveBadge {
+  color: #e74c3c;
+  font-weight: bold;
+}
+
+.playerStrip {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 0.75rem;
+  border-bottom: 1px solid var(--panel-border, #3a2228);
+  max-height: 150px;
+  overflow-y: auto;
+}
+
+.playerChip {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.25rem 0.5rem;
+  background-color: #1d0f13;
+  border: 1px solid #33181e;
+  border-radius: 4px;
+  font-size: 0.8rem;
+}
+
+.meChip {
+  border-color: #f1c40f;
+}
+
+.playerInitials {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.65rem;
+  font-weight: bold;
+  color: #fff;
+}
+
+.playerChipName {
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.votedTag {
+  font-size: 0.65rem;
+  color: #e74c3c;
+  background: rgba(231, 76, 60, 0.15);
+  border: 1px solid #e74c3c;
+  padding: 1px 4px;
+  border-radius: 3px;
+}
+
+.chatMessages {
+  flex: 1;
+  overflow-y: auto;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.chatEmpty {
+  color: #887;
+  font-size: 0.85rem;
+  text-align: center;
+  line-height: 1.4;
+  margin-top: 2rem;
+}
+
+.chatMsg {
+  background: #180a0e;
+  border: 1px solid #2e161c;
+  padding: 0.5rem 0.75rem;
+  border-radius: 4px;
+}
+
+.chatSender {
+  font-weight: bold;
+  color: #f1c40f;
+  font-size: 0.85rem;
+}
+
+.chatTime {
+  float: right;
+  font-size: 0.7rem;
+  color: #665;
+}
+
+.chatContent {
+  margin: 0.25rem 0 0;
+  font-size: 0.85rem;
+  color: #eee;
+  word-break: break-word;
+}
+
+.chatForm {
+  padding: 0.75rem;
+  border-top: 1px solid var(--panel-border, #3a2228);
+  display: flex;
+  gap: 0.5rem;
+  background: #0d0508;
+}
+
+.chatInput {
+  flex: 1;
+  background: #1d0f13;
+  border: 1px solid #3e2027;
+  color: #fff;
+  padding: 0.5rem;
+  font-family: inherit;
+  font-size: 0.85rem;
+  border-radius: 3px;
+}
+
+.chatInput:focus {
+  outline: none;
+  border-color: #f1c40f;
+}
+
+.chatSendBtn {
+  background: #b91c1c;
+  border: none;
+  color: #fff;
+  font-family: inherit;
+  font-size: 0.8rem;
+  padding: 0 0.75rem;
+  border-radius: 3px;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.chatSendBtn:hover {
+  background: #d92c2c;
+}
+
+/* --- Center Game Area --- */
+.gameArea {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+  background-color: #0d0508;
+}
+
+.phaserCanvas {
+  width: 100%;
+  height: 100%;
+  flex: 1;
+}
+
+.timerHud {
+  position: absolute;
+  top: 1rem;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 10;
+  background: rgba(0, 0, 0, 0.8);
+  border: 1px solid #e74c3c;
+  padding: 0.5rem 1.5rem;
+  border-radius: 4px;
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  font-weight: bold;
+  pointer-events: none;
+}
+
+.timerDanger {
+  border-color: #e74c3c;
+  animation: timerBlink 1s infinite alternate;
+}
+
+@keyframes timerBlink {
+  0% { box-shadow: 0 0 4px rgba(231, 76, 60, 0.4); }
+  100% { box-shadow: 0 0 15px rgba(231, 76, 60, 0.8); }
+}
+
+.timerValue {
+  color: #ff4444;
+}
+
+.voteHint {
+  position: absolute;
+  bottom: 1.5rem;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 10;
+  background: rgba(0, 0, 0, 0.8);
+  border: 1px solid #f1c40f;
+  color: #f1c40f;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  pointer-events: none;
+  font-size: 0.85rem;
+}
+
+.votedIndicator {
+  position: absolute;
+  bottom: 1.5rem;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 10;
+  background: rgba(0, 0, 0, 0.85);
+  border: 1px solid #27ae60;
+  color: #27ae60;
+  padding: 0.5rem 1.5rem;
+  border-radius: 4px;
+  pointer-events: none;
+  font-size: 0.85rem;
+}
+
+/* --- Right Sidebar (Vote Panel) --- */
+.votePanel {
+  background-color: #12070a;
+  border-left: 1px solid var(--panel-border, #3a2228);
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow-y: auto;
+}
+
+.votePanelTitle {
+  font-size: 1.2rem;
+  color: #e74c3c;
+  margin: 0 0 0.5rem;
+  letter-spacing: 1px;
+}
+
+.votePanelSub {
+  font-size: 0.8rem;
+  color: #887;
+  line-height: 1.4;
+  margin: 0 0 1.5rem;
+}
+
+.suspectList {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  flex: 1;
+}
+
+.suspectBtn {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  background: #180a0e;
+  border: 1px solid #33181e;
+  padding: 0.75rem;
+  border-radius: 4px;
+  cursor: pointer;
+  color: inherit;
+  text-align: left;
+  font-family: inherit;
+  transition: all 0.2s ease;
+}
+
+.suspectBtn:hover {
+  background: #251016;
+  border-color: #f1c40f;
+}
+
+.suspectInitials {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  font-size: 0.85rem;
+  color: #fff;
+}
+
+.suspectInfo {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.suspectName {
+  font-size: 0.85rem;
+  font-weight: bold;
+  color: #eee;
+}
+
+.suspectRole {
+  font-size: 0.7rem;
+  color: #776;
+}
+
+.suspectVoteCount {
+  font-size: 0.75rem;
+  color: #e74c3c;
+  background: rgba(231, 76, 60, 0.1);
+  padding: 0.2rem 0.5rem;
+  border-radius: 3px;
+  font-weight: bold;
+}
+
+.suspectVoteCount span {
+  font-size: 0.65rem;
+  font-weight: normal;
+  color: #776;
+}
+
+.voteTally {
+  margin: 1.5rem 0;
+  text-align: center;
+  border-top: 1px solid #2e161c;
+  padding-top: 1rem;
+}
+
+.backBtn {
+  background: transparent;
+  border: 1px solid #3a2228;
+  color: #887;
+  font-family: inherit;
+  padding: 0.5rem;
+  font-size: 0.75rem;
+  cursor: pointer;
+  width: 100%;
+  transition: all 0.2s ease;
+}
+
+.backBtn:hover {
+  color: #fff;
+  border-color: #887;
+}
+
+.voteConfirmed {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+  background: #180a0e;
+  border: 1px solid #2e161c;
+  border-radius: 4px;
+  padding: 2rem 1rem;
+  text-align: center;
+}
+
+.voteCheckmark {
+  font-size: 3rem;
+  color: #27ae60;
+  margin-bottom: 1rem;
+}
+
+.voteTarget {
+  font-size: 1.1rem;
+  font-weight: bold;
+  color: #f1c40f;
+  margin: 0.5rem 0;
+}
+
+/* --- Results Overlay --- */
+.resultOverlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.85);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  animation: fadeIn 0.5s ease forwards;
+}
+
+.resultBox {
+  background: #12070a;
+  border-radius: 8px;
+  padding: 3rem 2rem;
+  width: 90%;
+  max-width: 500px;
+  text-align: center;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.win .resultBox {
+  border: 2px solid #f1c40f;
+  box-shadow: 0 0 25px rgba(241, 196, 15, 0.3);
+}
+
+.lose .resultBox {
+  border: 2px solid #e74c3c;
+  box-shadow: 0 0 25px rgba(231, 76, 60, 0.3);
+}
+
+.resultIcon {
+  font-size: 4rem;
+  margin-bottom: 1rem;
+}
+
+.resultTitle {
+  font-family: Georgia, 'Times New Roman', Times, serif;
+  font-size: 2.2rem;
+  margin: 0 0 1rem;
+}
+
+.win .resultTitle {
+  color: #f1c40f;
+}
+
+.lose .resultTitle {
+  color: #e74c3c;
+}
+
+.resultDetail {
+  font-size: 1rem;
+  color: #eee;
+  line-height: 1.5;
+  margin: 0 0 2rem;
+}
+
+.redirecting {
+  font-size: 0.8rem;
+  color: #665;
+  animation: pulse 1s infinite alternate;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes pulse {
+  0% { opacity: 0.4; }
+  100% { opacity: 0.9; }
+}
+
+.loadingScreen {
+  height: 100vh;
+  width: 100vw;
+  background-color: #0b0507;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1.5rem;
+}
+
+.loadingSpinner {
+  width: 50px;
+  height: 50px;
+  border: 3px solid #3a2228;
+  border-top-color: #e74c3c;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}

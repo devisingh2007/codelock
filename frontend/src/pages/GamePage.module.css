@@ -422,3 +422,74 @@
   background-color: var(--accent-color);
   color: #000;
 }
+
+.chatArea {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  overflow: hidden;
+  background-color: #12070a;
+}
+
+.chatForm {
+  padding: var(--spacing-sm);
+  border-top: 1px solid var(--panel-border);
+  display: flex;
+  gap: var(--spacing-xs);
+  background-color: #0d0508;
+}
+
+.chatInput {
+  flex: 1;
+  background-color: #1d0f13;
+  border: 1px solid #3e2027;
+  color: #fff;
+  padding: 8px;
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  border-radius: var(--border-radius-sm);
+}
+
+.chatInput:focus {
+  outline: none;
+  border-color: var(--accent-color);
+}
+
+.sendBtn {
+  background-color: var(--danger-color);
+  border: none;
+  color: #fff;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  padding: 0 10px;
+  border-radius: var(--border-radius-sm);
+  cursor: pointer;
+  font-weight: 700;
+}
+
+.sendBtn:hover {
+  background-color: #ff3333;
+}
+
+.centerHeader {
+  border-bottom: 1px solid var(--panel-border);
+  margin-bottom: var(--spacing-md);
+}
+
+.playerGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: var(--spacing-md);
+  flex: 1;
+  overflow-y: auto;
+  padding: var(--spacing-sm);
+}
+
+.commsDashboard {
+  margin-top: var(--spacing-lg);
+  padding: var(--spacing-md);
+  border-top: 1px solid var(--panel-border);
+  background-color: rgba(26, 10, 14, 0.5);
+  border-radius: var(--border-radius-sm);
+}
+
