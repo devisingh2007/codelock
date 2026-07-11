@@ -560,9 +560,9 @@ export async function getProfile() {
         level: 1,
         stats: mockProfile.stats,
         preferredAsset: mockProfile.preferredAsset,
-        achievements: mockProfile.accolades.map(a => ({
-          name: a.title,
-          desc: 'Achievement unlocked from activities.',
+        achievements: (mockProfile.achievements || []).map(a => ({
+          name: a.name,
+          desc: a.desc,
           unlocked: a.unlocked
         }))
       };
