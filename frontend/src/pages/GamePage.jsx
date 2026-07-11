@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { getLobbyState, getEvidence, getObjectives, getTimeline, sendMessage, connectSocket, disconnectSocket } from '../api/gameApi';
+import { getLobbyState, getEvidence, getObjectives, getTimeline, sendMessage, connectSocket, disconnectSocket, getGameState } from '../api/gameApi';
 import LeftSidebar from '../components/LeftSidebar';
 import BottomActionBar from '../components/BottomActionBar';
 import InvestigationFeed from '../components/InvestigationFeed';
@@ -31,6 +31,9 @@ const GamePage = () => {
   const [selectedEvidence, setSelectedEvidence] = useState(null);
   const [userSocketMap, setUserSocketMap] = useState({});
   const [speakers, setSpeakers] = useState({});
+  const [locationName, setLocationName] = useState('The Grand Ballroom');
+  const [aiStatus, setAiStatus] = useState('OBSERVING');
+  const [seconds, setSeconds] = useState(0);
 
   // Voice Chat Hook Integration
   const { isMuted, voiceConnected, toggleMute, peerMicStates } = useVoiceChat(
@@ -51,12 +54,31 @@ const GamePage = () => {
         setEvidence(evs);
         setObjectives(objs);
         setTimeline(time);
+
+        // Fetch location details from the raw GameState
+        try {
+          const rawState = await getGameState(roomCode);
+          if (rawState && rawState.story) {
+            if (rawState.story.location) {
+              setLocationName(rawState.story.location);
+            } else if (rawState.story.title) {
+              setLocationName(rawState.story.title);
+            }
+          }
+        } catch (rawErr) {
+          console.warn("Could not load raw game state story details:", rawErr);
+        }
       } catch (err) {
         console.error(err);
       }
     };
     
     fetchData();
+
+    // Start elapsed timer ticker
+    const timer = setInterval(() => {
+      setSeconds(s => s + 1);
+    }, 1000);
 
     // Connect Socket.IO
     connectSocket(roomCode, (event, payload) => {
@@ -137,6 +159,7 @@ const GamePage = () => {
 
     return () => {
       disconnectSocket();
+      clearInterval(timer);
     };
   }, [roomCode]);
 
@@ -146,7 +169,11 @@ const GamePage = () => {
     
     const input = chatInput;
     setChatInput('');
+    setAiStatus('ANALYZING');
     await sendMessage(roomCode, input);
+    setTimeout(() => {
+      setAiStatus('OBSERVING');
+    }, 3000);
   };
 
   const handleEvidenceClick = (ev) => {
@@ -214,23 +241,27 @@ const GamePage = () => {
         <header className={styles.topBar}>
           <div className={styles.locationInfo}>
             <span className="font-mono text-muted">CURRENT LOCATION //</span>
-            <span className="font-serif text-xl ml-2">The Grand Ballroom</span>
+            <span className="font-serif text-xl ml-2 text-accent">{locationName}</span>
           </div>
           
           <div className={styles.topStats}>
-            <div className={styles.aiStatusPill}>
+            <div className={`${styles.aiStatusPill} ${aiStatus === 'ANALYZING' ? styles.aiAnalyzing : ''}`}>
               <span className={styles.aiDot}></span>
-              <span className="font-mono text-xs">AI: OBSERVING</span>
+              <span className="font-mono text-xs">AI: {aiStatus}</span>
             </div>
             <div className={styles.statBadge}>
               <Clock size={16} className="text-accent" />
-              <span className="font-mono">42:15</span>
+              <span className="font-mono">
+                {Math.floor(seconds / 60).toString().padStart(2, '0')}:{(seconds % 60).toString().padStart(2, '0')}
+              </span>
             </div>
             <div className={styles.statBadge}>
               <Shield size={16} className="text-accent" />
-              <span className="font-mono">6/8 SURVIVORS</span>
+              <span className="font-mono">
+                {players.filter(p => p.status !== 'ELIMINATED').length}/{players.length} SURVIVORS
+              </span>
             </div>
-            <button className={styles.iconBtn}><Settings size={20} /></button>
+            <button className={styles.iconBtn} onClick={() => navigate('/settings')}><Settings size={20} /></button>
             <button className={styles.iconBtn} onClick={() => navigate('/profile')}><User size={20} /></button>
           </div>
         </header>

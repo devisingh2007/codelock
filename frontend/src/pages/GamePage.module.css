@@ -129,6 +129,23 @@
   100% { opacity: 0.5; box-shadow: 0 0 2px var(--accent-color); }
 }
 
+.aiAnalyzing {
+  background-color: rgba(220, 53, 69, 0.1);
+  border-color: var(--danger-color);
+  color: var(--danger-color);
+}
+
+.aiAnalyzing .aiDot {
+  background-color: var(--danger-color);
+  animation: fastPulse 0.5s infinite;
+}
+
+@keyframes fastPulse {
+  0% { opacity: 0.2; box-shadow: 0 0 2px var(--danger-color); }
+  50% { opacity: 1; box-shadow: 0 0 12px var(--danger-color); }
+  100% { opacity: 0.2; box-shadow: 0 0 2px var(--danger-color); }
+}
+
 .statBadge {
   display: flex;
   align-items: center;
