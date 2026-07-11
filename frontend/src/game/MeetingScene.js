@@ -67,7 +67,8 @@ export class MeetingScene extends Phaser.Scene {
     vignette.setAlpha(0.35);
 
     // --- Round Table (drawn programmatically) ---
-    this.drawTable(W / 2, H / 2 - 20);
+    // Disabled programmatic 2D table to show the beautiful detailed background scenery table instead.
+    // this.drawTable(W / 2, H / 2 - 20);
 
     // --- Player Characters ---
     this.players.forEach((player, idx) => {
@@ -180,7 +181,7 @@ export class MeetingScene extends Phaser.Scene {
     }).setOrigin(0.5, 1).setDepth(100).setAlpha(0);
 
     // --- Ambient particle sparkles (candles) ---
-    this.addCandleParticles(W / 2, H / 2 - 20);
+    // this.addCandleParticles(W / 2, H / 2 - 20);
 
     // --- Entry animation ---
     this.cameras.main.setAlpha(0);
