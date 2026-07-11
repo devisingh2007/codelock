@@ -22,8 +22,8 @@ Object.defineProperty(window, 'matchMedia', {
   })),
 });
 
-// Mock simple localStorage
-const localStorageMock = (function () {
+// Mock simple sessionStorage
+const sessionStorageMock = (function () {
   let store = {};
   return {
     getItem: function (key) {
@@ -40,8 +40,8 @@ const localStorageMock = (function () {
     }
   };
 })();
-Object.defineProperty(window, 'localStorage', {
-  value: localStorageMock
+Object.defineProperty(window, 'sessionStorage', {
+  value: sessionStorageMock
 });
 
 // jsdom doesn't implement scrollIntoView — mock it

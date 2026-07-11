@@ -17,7 +17,8 @@ const LobbyPage = () => {
   const [chatInput, setChatInput] = useState('');
   const [error, setError] = useState('');
   const [starting, setStarting] = useState(false);
-  const [selectedDifficulty, setSelectedDifficulty] = useState(localStorage.getItem('difficulty') || 'medium');
+  const [selectedDifficulty, setSelectedDifficulty] = useState(sessionStorage.getItem('difficulty') || 'medium');
+  const [copied, setCopied] = useState(false);
 
   useEffect(() => {
     // 1. Fetch initial state
@@ -121,7 +122,7 @@ const LobbyPage = () => {
     setStarting(true);
     setError('');
     try {
-      const theme = localStorage.getItem('theme') || 'mansion';
+      const theme = sessionStorage.getItem('theme') || 'mansion';
       
       // Host triggers the mystery generation with case settings
       await generateMysteryForRoomCode(roomCode, {
@@ -137,6 +138,8 @@ const LobbyPage = () => {
 
   const handleCopyCode = () => {
     navigator.clipboard.writeText(roomCode);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
   };
 
   if (!roomState) {
@@ -145,8 +148,8 @@ const LobbyPage = () => {
 
   const { caseInfo, players } = roomState;
 
-  // Resolve the current player's display name from localStorage if available
-  const savedPlayerName = localStorage.getItem('username') || localStorage.getItem('playerName');
+  // Resolve the current player's display name from sessionStorage if available
+  const savedPlayerName = sessionStorage.getItem('username') || sessionStorage.getItem('playerName');
   const mappedPlayers = players.map(p => {
     if (p.isMe && savedPlayerName) {
       const initials = savedPlayerName.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
@@ -175,7 +178,9 @@ const LobbyPage = () => {
               <span className="font-mono text-muted">ROOM CODE</span>
               <div className={styles.codeRow}>
                 <span className={`${styles.code} font-mono`}>{roomCode}</span>
-                <button className={styles.copyBtn} onClick={handleCopyCode}><Copy size={16} /></button>
+                <button className={styles.copyBtn} onClick={handleCopyCode}>
+                  {copied ? <span style={{ fontSize: '10px' }}>COPIED!</span> : <Copy size={16} />}
+                </button>
               </div>
             </div>
           </div>
@@ -184,7 +189,7 @@ const LobbyPage = () => {
             {mappedPlayers.map(p => <PlayerCard key={p.id} player={p} />)}
             <button className={styles.inviteCard} onClick={handleCopyCode}>
               <Plus size={24} className="mb-2" />
-              <span>COPY ROOM CODE</span>
+              <span>{copied ? 'COPIED TO CLIPBOARD' : 'COPY ROOM CODE'}</span>
             </button>
           </div>
 
@@ -261,7 +266,7 @@ const LobbyPage = () => {
                 WAITING FOR HOST
               </button>
             )}
-            <p className={styles.hostNote}>Only the host can initiate the case</p>
+            {!isHost && <p className={styles.hostNote}>Only the host can initiate the case</p>}
           </div>
         </div>
       </main>

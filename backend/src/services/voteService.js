@@ -32,12 +32,7 @@ const castVote = async ({ roomId, voterId, accusedPlayerId }) => {
     throw error;
   }
 
-  // 3. Verify accused player is in the room
-  if (!room.players.map(p => p.toString()).includes(accusedPlayerId.toString())) {
-    const error = new Error("Invalid suspect: accused player is not in this room.");
-    error.status = 400;
-    throw error;
-  }
+  // 3. Verify accused player (removed room.players check to allow voting for NPCs)
 
   // 4. Retrieve GameState and verify phase is "voting"
   const gameState = await GameState.findOne({ roomId: code });
@@ -47,8 +42,8 @@ const castVote = async ({ roomId, voterId, accusedPlayerId }) => {
     throw error;
   }
 
-  if (gameState.phase !== "voting") {
-    const error = new Error(`Cannot vote outside voting phase. Current phase is "${gameState.phase}".`);
+  if (!["roles-assigned", "investigation", "voting"].includes(gameState.phase)) {
+    const error = new Error(`Cannot vote outside active gameplay phase. Current phase is "${gameState.phase}".`);
     error.status = 400;
     throw error;
   }

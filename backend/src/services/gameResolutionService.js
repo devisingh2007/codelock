@@ -35,56 +35,31 @@ const resolveGame = async (roomId) => {
     };
   }
 
-  // 3. Count votes per accused player ID
+  // 3. Count votes per accused player ID (which is now the suspect name)
   const voteCounts = {};
   for (const vote of votes) {
-    const accusedId = vote.accusedPlayerId.toString();
+    const accusedId = vote.accusedPlayerId;
     voteCounts[accusedId] = (voteCounts[accusedId] || 0) + 1;
   }
 
-  // 4. Fetch User documents to get usernames
-  const userIds = Object.keys(voteCounts);
-  const users = await User.find({ _id: { $in: userIds } });
-  const userMap = {};
-  for (const user of users) {
-    userMap[user._id.toString()] = user.username;
-  }
-
-  // Map vote counts to usernames for the output
-  const mappedVotes = {};
-  for (const [userId, count] of Object.entries(voteCounts)) {
-    const username = userMap[userId] || userId;
-    mappedVotes[username] = count;
-  }
-
-  // 5. Determine the winner (highest votes) and check tie conditions
+  // 4. Determine the winner (highest votes) and check tie conditions
   let highestVotes = -1;
   let winnerId = null;
   let isTie = false;
-  let tiedCandidates = [];
 
-  for (const [userId, count] of Object.entries(voteCounts)) {
+  for (const [suspectName, count] of Object.entries(voteCounts)) {
     if (count > highestVotes) {
       highestVotes = count;
-      winnerId = userId;
+      winnerId = suspectName;
       isTie = false;
-      tiedCandidates = [userId];
     } else if (count === highestVotes) {
       isTie = true;
-      tiedCandidates.push(userId);
     }
   }
 
-  const winnerUsername = isTie ? null : (userMap[winnerId] || winnerId);
-
-  // 6. Compare with actual murderer
-  // The murderer name can be mapped to either username or a name in suspects.
-  // Let's check how the murderer name is stored.
-  // story.crime.killer is suspect name or username.
+  const winnerUsername = isTie ? null : winnerId;
   const actualMurderer = gameState.story?.crime?.killer || "Unknown";
 
-  // Check if winner username (or suspect name matching player) is the killer
-  // We can look up the user object for the winner and check if their username matches the actual murderer (case-insensitive).
   let correct = false;
   if (winnerUsername) {
     if (winnerUsername.toLowerCase() === actualMurderer.toLowerCase()) {
@@ -96,7 +71,7 @@ const resolveGame = async (roomId) => {
     accused: winnerUsername || "Tie / None",
     actualMurderer,
     correct,
-    votes: mappedVotes,
+    votes: voteCounts,
     isTie,
     winner: winnerUsername,
     voteCount: highestVotes,

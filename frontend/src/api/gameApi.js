@@ -18,7 +18,14 @@ import {
 const API_BASE_URL = config.API_BASE_URL || 'http://localhost:3000';
 
 const getHeaders = () => {
-  const token = localStorage.getItem('token');
+  let token = sessionStorage.getItem('token');
+  if (!token) {
+    token = localStorage.getItem('token');
+    if (token) {
+      sessionStorage.setItem('token', token);
+      sessionStorage.setItem('username', localStorage.getItem('username'));
+    }
+  }
   return {
     'Content-Type': 'application/json',
     ...(token ? { 'Authorization': `Bearer ${token}` } : {})
@@ -39,8 +46,11 @@ export async function autoAuthenticate(playerName) {
     });
     const data = await res.json();
     if (res.ok && data.token) {
-      localStorage.setItem('token', data.token);
-      localStorage.setItem('username', username);
+      sessionStorage.setItem('token', data.token);
+      sessionStorage.setItem('username', username);
+      if (data.userId || data.user?._id || data.user?.id) {
+        sessionStorage.setItem('userId', data.userId || data.user?._id || data.user?.id);
+      }
       return data.token;
     }
   } catch (err) {
@@ -55,8 +65,11 @@ export async function autoAuthenticate(playerName) {
   });
   const data = await res.json();
   if (res.ok && data.token) {
-    localStorage.setItem('token', data.token);
-    localStorage.setItem('username', username);
+    sessionStorage.setItem('token', data.token);
+    sessionStorage.setItem('username', username);
+    if (data.userId || data.user?._id || data.user?.id) {
+      sessionStorage.setItem('userId', data.userId || data.user?._id || data.user?.id);
+    }
     return data.token;
   } else {
     throw new Error(data.message || 'Authentication failed');
@@ -71,7 +84,7 @@ export async function createRoom() {
   const data = await res.json();
   if (!res.ok) throw new Error(data.error || 'Failed to create room');
   if (data.room && data.room.roomCode) {
-    localStorage.setItem('roomCode', data.room.roomCode);
+    sessionStorage.setItem('roomCode', data.room.roomCode);
   }
   return data.room;
 }
@@ -84,7 +97,7 @@ export async function joinRoom(roomCode) {
   });
   const data = await res.json();
   if (!res.ok) throw new Error(data.error || 'Failed to join room');
-  localStorage.setItem('roomCode', roomCode.toUpperCase());
+  sessionStorage.setItem('roomCode', roomCode.toUpperCase());
   return data.room;
 }
 
@@ -115,7 +128,7 @@ export async function generateMysteryForRoomCode(roomCode, options = {}) {
 export async function getLobbyState(roomCode) {
   try {
     const room = await getRoom(roomCode);
-    const currentUsername = localStorage.getItem('username');
+    const currentUsername = sessionStorage.getItem('username');
     return {
       caseInfo: {
         name: `Investigation ${room.roomCode}`,
@@ -151,7 +164,7 @@ export function connectSocket(roomCode, onEvent) {
   if (socket) {
     socket.disconnect();
   }
-  const token = localStorage.getItem('token');
+  const token = sessionStorage.getItem('token');
   socket = io(API_BASE_URL, {
     auth: { token }
   });
@@ -235,33 +248,52 @@ export async function getMyCharacter(roomCode) {
       const data = await res.json();
       const state = data.data || data.state;
       if (state && state.story && state.story.victim) {
-        // Return character details based on story
-        const currentUsername = localStorage.getItem('username');
+        const currentUsername = sessionStorage.getItem('username');
+        const currentUserId   = sessionStorage.getItem('userId');
         const suspects = state.story.suspects || [];
         const roles = state.roles || [];
-        
-        // Find which character was assigned to the current player
-        const myRole = roles.find(r => r.userId?.username === currentUsername);
-        const mySuspect = myRole 
-          ? suspects.find(s => s.name === myRole.roleName)
-          : (suspects.find(s => s.name === currentUsername) || suspects[0] || {});
+
+        // Match by userId._id (populated) first, then by username, then first unassigned
+        let myRole = null;
+        if (currentUserId) {
+          myRole = roles.find(r => {
+            const uid = r.userId?._id || r.userId;
+            return uid && uid.toString() === currentUserId.toString();
+          });
+        }
+        if (!myRole && currentUsername) {
+          myRole = roles.find(r => r.userId?.username === currentUsername);
+        }
+
+        const mySuspect = myRole
+          ? (suspects.find(s => s.name === myRole.roleName) || suspects[0] || {})
+          : (suspects[0] || {});
+
+        const isMurderer = mySuspect.isMurderer === true;
+        const assignedObjective = myRole?.objective || (isMurderer
+          ? `Survive the night. Deflect every accusation and make sure the truth stays buried.`
+          : `Investigate the murder of ${state.story.victim.name}. Find the real killer before they frame you.`);
+        const assignedSecret = myRole?.secret || mySuspect.background || 'You have a secret to protect.';
+        const assignedClues  = myRole?.clues || [];
 
         return {
-          playerId: 'p1',
-          name: myRole ? myRole.roleName : (mySuspect.name || currentUsername),
-          title: mySuspect.relationshipToVictim || 'Suspect',
-          occupation: mySuspect.relationshipToVictim || 'Dignitary',
-          objective: mySuspect.isMurderer ? 'You are the killer! Deflect suspicion and blame others.' : 'Find the real murderer among the suspects.',
-          classifiedMission: mySuspect.background || 'Find clues.',
-          syncRate: 100,
-          serialNumber: 'SN-998-EV-ALPHA'
+          playerId: currentUserId || 'p1',
+          name: myRole?.roleName || mySuspect.name || currentUsername,
+          title: mySuspect.relationshipToVictim || (isMurderer ? 'Prime Suspect' : 'Investigator'),
+          occupation: mySuspect.relationshipToVictim || 'Guest',
+          objective: assignedObjective,
+          classifiedMission: assignedSecret,
+          personalClues: assignedClues,
+          isMurderer,
+          syncRate: myRole ? 100 : 75,
+          serialNumber: `SN-${Math.random().toString(36).substr(2,5).toUpperCase()}-EV`
         };
       }
     }
   } catch (err) {
     console.error('getMyCharacter API error, falling back...', err);
   }
-  return mockCharacterSheet;
+  return null;
 }
 
 export async function getFeedMessages(roomCode) {
@@ -340,7 +372,7 @@ export async function getTimeline(roomCode) {
   } catch (err) {
     console.error('getTimeline failed, falling back...', err);
   }
-  return mockTimeline;
+  return [];
 }
 
 export async function getSuspects(roomCode) {
@@ -353,13 +385,13 @@ export async function getSuspects(roomCode) {
       const data = await res.json();
       const state = data.data || data.state;
       if (state && state.story && state.story.suspects) {
-        const currentUsername = localStorage.getItem('username');
+        const currentUsername = sessionStorage.getItem('username');
         const roles = state.roles || [];
         
         // Fetch current votes if available
         let voteCounts = {};
         try {
-          const resVotes = await fetch(`${API_BASE_URL}/api/vote/vote/${roomCode.toUpperCase()}/results`, {
+          const resVotes = await fetch(`${API_BASE_URL}/api/vote/${roomCode.toUpperCase()}/results`, {
             method: 'GET',
             headers: getHeaders()
           });
@@ -378,14 +410,14 @@ export async function getSuspects(roomCode) {
           const displayName = playerUsername ? `${s.name} (${playerUsername})` : s.name;
           const isMe = playerUsername === currentUsername;
           
-          // Get actual vote count for this player's username
-          const voteCount = playerUsername ? (voteCounts[playerUsername] || 0) : 0;
+          // Get actual vote count for this suspect name
+          const voteCount = voteCounts[s.name] || 0;
           
           // Calculate suspicion level dynamically based on votes (baseline 25% + 25% per vote)
           const suspicion = Math.min(25 + (voteCount * 25), 100);
 
           return {
-            id: associatedRole?.userId?._id || associatedRole?.userId || `s${idx}`,
+            id: s.name,
             name: displayName,
             role: s.relationshipToVictim,
             votes: voteCount,
@@ -398,11 +430,11 @@ export async function getSuspects(roomCode) {
   } catch (err) {
     console.error('getSuspects failed, falling back...', err);
   }
-  return mockSuspects;
+  return [];
 }
 
 export async function castVote(roomCode, suspectId) {
-  const res = await fetch(`${API_BASE_URL}/api/vote/vote`, {
+  const res = await fetch(`${API_BASE_URL}/api/vote`, {
     method: 'POST',
     headers: getHeaders(),
     body: JSON.stringify({ roomId: roomCode.toUpperCase(), accusedPlayerId: suspectId })
@@ -436,7 +468,7 @@ export async function getRevealData(roomCode) {
         let votesCorrect = 0;
         let totalPlayers = state.players?.length || 0;
         try {
-          const resVotes = await fetch(`${API_BASE_URL}/api/vote/vote/${roomCode.toUpperCase()}/results`, {
+          const resVotes = await fetch(`${API_BASE_URL}/api/vote/${roomCode.toUpperCase()}/results`, {
             method: 'GET',
             headers: getHeaders()
           });
@@ -444,8 +476,8 @@ export async function getRevealData(roomCode) {
             const voteData = await resVotes.json();
             const votes = voteData.votes || {};
             // Count votes cast for the killer's username
-            if (killerUsername) {
-              votesCorrect = votes[killerUsername] || 0;
+            if (killerName) {
+              votesCorrect = votes[killerName] || 0;
             }
           }
         } catch (vErr) {
@@ -472,11 +504,72 @@ export async function getRevealData(roomCode) {
   } catch (err) {
     console.error('getRevealData failed, falling back...', err);
   }
-  return mockRevealData;
+  return null;
 }
 
 export async function getReplayReport(roomCode) {
-  return mockReplayReport;
+  try {
+    // Fetch game state for story + timeline
+    const res = await fetch(`${API_BASE_URL}/api/game/${roomCode.toUpperCase()}/state`, {
+      method: 'GET',
+      headers: getHeaders()
+    });
+    if (res.ok) {
+      const data = await res.json();
+      const state = data.data || data.state;
+      if (state && state.story) {
+        const story = state.story;
+        const killerName = story.crime?.killer || 'Unknown';
+        const roles = state.roles || [];
+
+        // Fetch real vote results
+        let votes = {};
+        try {
+          const vRes = await fetch(`${API_BASE_URL}/api/vote/${roomCode.toUpperCase()}/results`, {
+            method: 'GET',
+            headers: getHeaders()
+          });
+          if (vRes.ok) {
+            const vData = await vRes.json();
+            votes = vData.votes || {};
+          }
+        } catch (_) {}
+
+        // Build per-suspect vote breakdown from real data
+        const suspects = story.suspects || [];
+        const totalVotes = Object.values(votes).reduce((a, b) => a + b, 0);
+
+        const voteBreakdown = suspects.map(s => {
+          const count = votes[s.name] || 0;
+          return {
+            suspectName: s.name,
+            votedFor: s.name,
+            isCorrect: s.name === killerName,
+            count
+          };
+        });
+
+        const correctVotes = votes[killerName] || 0;
+        const accuracy = totalVotes > 0 ? Math.round((correctVotes / totalVotes) * 100) : 0;
+
+        return {
+          title: story.title || 'The Investigation',
+          location: story.location || 'Unknown Location',
+          victim: story.victim?.name || 'The Victim',
+          murderer: killerName,
+          weapon: story.crime?.weapon || 'Unknown',
+          narrative: story.crime?.summary || 'The truth has been revealed.',
+          timeline: (story.timeline || []).map(t => ({ time: t.time, event: t.event })),
+          voteBreakdown,
+          teamAccuracy: accuracy,
+          suspects: suspects.map(s => ({ name: s.name, role: s.relationshipToVictim, isKiller: s.name === killerName }))
+        };
+      }
+    }
+  } catch (err) {
+    console.error('getReplayReport failed:', err);
+  }
+  return null;
 }
 
 export async function getClueBoard(roomCode) {

@@ -150,7 +150,7 @@ export function useVoiceChat(roomCode, activePlayers, onSpeakerUpdate) {
 
         // Map socketId/local back to player names
         if (id === 'local') {
-          const myName = localStorage.getItem('username');
+          const myName = sessionStorage.getItem('username');
           if (myName) activeSpeakers[myName] = isSpeaking;
         } else {
           // Find player name corresponding to this peer connection

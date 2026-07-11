@@ -16,10 +16,10 @@ global.fetch = vi.fn();
 describe('gameApi - autoAuthenticate', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    localStorage.clear();
+    sessionStorage.clear();
   });
 
-  it('stores token in localStorage on successful registration', async () => {
+  it('stores token in sessionStorage on successful registration', async () => {
     global.fetch.mockResolvedValueOnce({
       ok: true,
       json: async () => ({ token: 'fake-token-123' }),
@@ -29,8 +29,8 @@ describe('gameApi - autoAuthenticate', () => {
     const token = await autoAuthenticate('TestPlayer');
     
     expect(token).toBe('fake-token-123');
-    expect(localStorage.getItem('token')).toBe('fake-token-123');
-    expect(localStorage.getItem('username')).toBe('TestPlayer');
+    expect(sessionStorage.getItem('token')).toBe('fake-token-123');
+    expect(sessionStorage.getItem('username')).toBe('TestPlayer');
   });
 
   it('falls back to login when registration fails', async () => {
@@ -50,7 +50,7 @@ describe('gameApi - autoAuthenticate', () => {
     const token = await autoAuthenticate('ExistingPlayer');
     
     expect(token).toBe('login-token-456');
-    expect(localStorage.getItem('token')).toBe('login-token-456');
+    expect(sessionStorage.getItem('token')).toBe('login-token-456');
   });
 });
 

@@ -17,7 +17,15 @@ const RevealPage = () => {
     fetchReveal();
   }, [roomCode]);
 
-  if (!reveal) return <div className={styles.loading}>Processing Verdict...</div>;
+  if (!reveal && reveal !== null) return <div className={styles.loading}>Processing Verdict...</div>;
+  if (reveal === null) return (
+    <div className={styles.loading}>
+      <p style={{color:'var(--danger-color,#e55)', fontFamily:'monospace'}}>
+        ⚠ Could not load reveal data. The game may not be complete yet.
+      </p>
+      <button style={{marginTop:'16px',padding:'10px 24px',cursor:'pointer'}} onClick={() => navigate('/')}>Return to HQ</button>
+    </div>
+  );
 
   return (
     <div className={styles.pageLayout}>

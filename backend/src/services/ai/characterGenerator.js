@@ -122,13 +122,80 @@ ${errors.map((e) => `- ${e}`).join("\n")}
 Please correct these errors. Make sure all fields (roleName, background, objective, secret) are present, non-empty, under 300 characters, and that the role names match the suspects in the story exactly. Return ONLY valid JSON.`;
 };
 
-/**
- * Generates character roles using the Ollama LLM based on the game story.
- *
- * @param {object} story - GameState.story object.
- * @returns {Promise<object[]>} Array of sanitized and trimmed role objects.
- * @throws {Error} If all generation attempts fail.
- */
+const MURDERER_SECRETS = [
+  "You slipped the poison into their drink during the distraction at 22:00. You knew exactly what you were doing.",
+  "You used your knowledge of the estate's back passages to approach unseen. No one saw you enter the private room.",
+  "You had practiced the plan for weeks. The weapon was concealed in your coat all evening.",
+  "You waited until everyone was distracted by the argument in the east wing. Your hands were steady.",
+];
+
+const INNOCENT_SECRETS = [
+  "You were secretly meeting with a private investigator that evening to gather evidence against the victim yourself — for entirely different reasons.",
+  "You had been embezzling a small amount from a joint account with the victim. You were terrified they were about to expose you.",
+  "You slipped out to make a call to your contact in Geneva at exactly 22:00. You cannot reveal who you were calling without blowing your cover.",
+  "You took a valuable item from the victim's study earlier in the evening — not related to the murder, but deeply incriminating.",
+  "You witnessed the argument between the victim and another guest but chose to say nothing to protect someone you care about.",
+  "You overheard the victim speaking on the phone about a dangerous deal that would ruin several people in this very room.",
+  "You have a second identity that the victim had just discovered. You were desperate to find out how much they had told others.",
+];
+
+const MURDERER_CLUES = [
+  ["You were seen near the private study at 22:05 — but you claim you were in the drawing room.", "A faint residue matching the weapon was found near your seat at the table."],
+  ["Your alibi for the critical window has a 15-minute gap you cannot explain.", "A staff member noticed you were unusually calm when the body was discovered."],
+  ["You had private knowledge of the victim's evening schedule that only an insider would know.", "Your fingerprints were found on a glass that does not belong to your usual place setting."],
+];
+
+const INNOCENT_CLUES = [
+  ["You noticed the victim received an unsigned note during dinner but thought nothing of it.", "You heard footsteps outside your door around 22:10 — heavy, deliberate steps."],
+  ["You saw someone adjust their jacket suspiciously near the drinks cabinet before dinner.", "The victim appeared distracted and anxious all evening — unlike their usual demeanour."],
+  ["A glass was moved from its original position near the victim's seat between the first and second course.", "You overheard a whispered argument in French near the entrance at approximately 21:30."],
+  ["You found a torn piece of paper with partial coordinates near the fireplace — it was gone by morning.", "The victim's personal assistant left the room hurriedly and did not return for twenty minutes."],
+  ["You noticed the victim checked their watch compulsively in the final hour — as if expecting something.", "One of the guests spent an unusually long time alone on the terrace despite the cold night air."],
+];
+
+const pickRandom = (arr) => arr[Math.floor(Math.random() * arr.length)];
+
+const generateMockCharacters = (story) => {
+  const suspects = story.suspects || [];
+  const victim = story.victim || {};
+  const crime = story.crime || {};
+
+  const usedInnocentSecrets = new Set();
+  const usedInnocentClues = new Set();
+
+  return suspects.map(s => {
+    if (s.isMurderer) {
+      return {
+        roleName: String(s.name || "Unknown").trim().slice(0, 300),
+        background: String(s.background || "A shadowy figure with much to hide.").trim().slice(0, 300),
+        objective: `Survive the night. Deflect every accusation. Make sure ${victim.name || "the victim"} stays dead and you stay free.`,
+        secret: pickRandom(MURDERER_SECRETS),
+        clues: pickRandom(MURDERER_CLUES),
+      };
+    }
+
+    // Pick a unique secret for each innocent suspect
+    let secretIdx;
+    do { secretIdx = Math.floor(Math.random() * INNOCENT_SECRETS.length); }
+    while (usedInnocentSecrets.has(secretIdx) && usedInnocentSecrets.size < INNOCENT_SECRETS.length);
+    usedInnocentSecrets.add(secretIdx);
+
+    // Pick unique clues
+    let clueIdx;
+    do { clueIdx = Math.floor(Math.random() * INNOCENT_CLUES.length); }
+    while (usedInnocentClues.has(clueIdx) && usedInnocentClues.size < INNOCENT_CLUES.length);
+    usedInnocentClues.add(clueIdx);
+
+    return {
+      roleName: String(s.name || "Unknown").trim().slice(0, 300),
+      background: String(s.background || "An enigmatic guest with a hidden past.").trim().slice(0, 300),
+      objective: `Investigate the murder of ${victim.name || "the victim"}. You did NOT commit this crime — but you have your own secrets to protect. Find the real killer before they frame you.`,
+      secret: INNOCENT_SECRETS[secretIdx],
+      clues: INNOCENT_CLUES[clueIdx],
+    };
+  });
+};
+
 const generateCharacters = async (story) => {
   const MAX_ATTEMPTS = 3;
   let prompt = buildPrompt(story);
@@ -139,8 +206,15 @@ const generateCharacters = async (story) => {
       `[CharacterGenerator] Generating characters (attempt ${attempt}/${MAX_ATTEMPTS})`
     );
 
+    let raw;
     try {
-      const raw = await ollamaService.sendPrompt(prompt);
+      raw = await ollamaService.sendPrompt(prompt);
+    } catch (err) {
+      console.warn(`[CharacterGenerator] Ollama API error on attempt ${attempt}: ${err.message}. Falling back to mock roles.`);
+      return generateMockCharacters(story);
+    }
+
+    try {
       const parsed = extractJson(raw);
 
       if (!parsed || !Array.isArray(parsed.roles)) {
@@ -182,17 +256,14 @@ const generateCharacters = async (story) => {
       lastErrors = validationErrors;
       prompt = buildClarificationPrompt(story, validationErrors);
     } catch (err) {
-      console.warn(`[CharacterGenerator] Attempt ${attempt} failed: ${err.message}`);
+      console.warn(`[CharacterGenerator] Parsing Attempt ${attempt} failed: ${err.message}`);
       lastErrors = [err.message];
       prompt = buildClarificationPrompt(story, [err.message]);
     }
   }
 
-  throw new Error(
-    `[CharacterGenerator] Failed to generate valid character roles after ${MAX_ATTEMPTS} attempts. Last errors: ${lastErrors.join(
-      "; "
-    )}`
-  );
+  console.warn(`[CharacterGenerator] Failed to generate valid character roles after ${MAX_ATTEMPTS} attempts. Falling back to mock data.`);
+  return generateMockCharacters(story);
 };
 
 module.exports = {

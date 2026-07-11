@@ -218,7 +218,7 @@ const GamePage = () => {
   if (!roomState) return <div className={styles.loading}>Connecting to HUD...</div>;
 
   const { caseInfo, players } = roomState;
-  const savedPlayerName = localStorage.getItem('playerName') || localStorage.getItem('username');
+  const savedPlayerName = sessionStorage.getItem('playerName') || sessionStorage.getItem('username');
   
   const mappedPlayers = players.map(p => {
     const isMe = p.name === savedPlayerName || p.isMe;

@@ -23,12 +23,17 @@ const VotePage = () => {
 
   const handleVote = async (suspectId) => {
     if (hasVoted) return;
-    await castVote(roomCode, suspectId);
-    setHasVoted(true);
-    
-    // Refresh suspects to show updated suspicion
-    const updated = await getSuspects(roomCode);
-    setSuspects(updated);
+    try {
+      await castVote(roomCode, suspectId);
+      setHasVoted(true);
+      
+      // Refresh suspects to show updated suspicion
+      const updated = await getSuspects(roomCode);
+      setSuspects(updated);
+    } catch (err) {
+      console.error(err);
+      alert(err.message || 'Failed to cast vote.');
+    }
   };
 
   return (

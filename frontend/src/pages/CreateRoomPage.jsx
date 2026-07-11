@@ -22,8 +22,8 @@ const CreateRoomPage = () => {
       const room = await createRoom();
       
       // Store case configuration for mystery generator
-      localStorage.setItem('difficulty', difficulty.toLowerCase());
-      localStorage.setItem('theme', theme);
+      sessionStorage.setItem('difficulty', difficulty.toLowerCase());
+      sessionStorage.setItem('theme', theme);
       
       navigate(`/lobby/${room.roomCode}`);
     } catch (err) {

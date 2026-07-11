@@ -144,8 +144,9 @@ const sendPrompt = async (prompt, options = {}) => {
     } catch (err) {
       const status = err.response?.status;
       const isRateLimited = status === 429;
-      const isNetworkError = !status; // timeout / ECONNREFUSED
-      const isRetryable = isRateLimited || isNetworkError;
+      // If there's no status, it's likely ECONNREFUSED. We shouldn't retry local network failures to allow fallbacks to kick in instantly.
+      const isNetworkError = !status; 
+      const isRetryable = isRateLimited; // Only retry on 429
 
       console.error(
         `[OllamaService] ✗ ${attemptLabel} failed | status=${status ?? "network"} | ` +

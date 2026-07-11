@@ -36,7 +36,7 @@ const SettingsPage = () => {
 
   const handleSave = (e) => {
     e.preventDefault();
-    navigate('/');
+    navigate(-1);
   };
 
   return (
@@ -148,7 +148,7 @@ const SettingsPage = () => {
             </div>
 
             <div className={styles.actions}>
-              <button type="button" className={styles.ghostBtn} onClick={() => navigate('/')}>CANCEL</button>
+              <button type="button" className={styles.ghostBtn} onClick={() => navigate(-1)}>CANCEL</button>
               <button type="submit" className={styles.submitBtn}>SAVE SETTINGS</button>
             </div>
           </form>

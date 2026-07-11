@@ -29,7 +29,7 @@ const register = async (req, res) => {
 
     const token = signToken({ id: user._id });
 
-    return res.status(201).json({ token });
+    return res.status(201).json({ token, userId: user._id.toString() });
   } catch (error) {
     console.error("Register error:", error);
     return res.status(500).json({ message: "Internal server error." });
@@ -57,7 +57,7 @@ const login = async (req, res) => {
 
     const token = signToken({ id: user._id });
 
-    return res.status(200).json({ token });
+    return res.status(200).json({ token, userId: user._id.toString() });
   } catch (error) {
     console.error("Login error:", error);
     return res.status(500).json({ message: "Internal server error." });

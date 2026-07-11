@@ -17,7 +17,8 @@ const voteValidation = [
     .matches(/^[A-Z0-9]{6}$/i)
     .withMessage("Room ID must be a 6-character alphanumeric code."),
   body("accusedPlayerId")
-    .isMongoId()
+    .isString()
+    .notEmpty()
     .withMessage("Invalid accusedPlayerId."),
 ];
 
@@ -33,7 +34,6 @@ router.post(
   "/vote",
   authMiddleware,
   voteValidation,
-  validateGamePhase(["voting"]),
   castVote
 );
 

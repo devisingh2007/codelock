@@ -4,7 +4,7 @@ const gameStateService = require("../services/gameStateService");
 const roleService = require("../services/roleService");
 const { generateMystery } = require("../services/ai/mysteryGenerator");
 const { validateMystery } = require("../utils/mysteryValidator");
-const { io } = require("../sockets/gameSocket");
+const gameSocket = require("../sockets/gameSocket");
 const aiConfig = require("../config/ai");
 
 // ─── Per-room endpoint rate limiter ───────────────────────────────────────────
@@ -231,7 +231,7 @@ const generateMysteryForRoom = async (req, res, next) => {
 
     // 5. Emit Socket.IO event to all room members
     try {
-      io.to(roomCode).emit("mystery-generated", { roomCode, story: storyPayload });
+      gameSocket.io.to(roomCode).emit("mystery-generated", { roomCode, story: storyPayload });
       console.log(`[GameController] Emitted mystery-generated to room ${roomCode}.`);
     } catch (socketErr) {
       // Non-fatal: log but don't fail the HTTP response
