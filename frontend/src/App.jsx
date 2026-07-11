@@ -7,7 +7,6 @@ import LobbyPage from './pages/LobbyPage';
 import CharacterRevealPage from './pages/CharacterRevealPage';
 import GamePage from './pages/GamePage';
 import SceneInspectPage from './pages/SceneInspectPage';
-import VotePage from './pages/VotePage';
 import RevealPage from './pages/RevealPage';
 import ReplayReportPage from './pages/ReplayReportPage';
 import EvidenceBoardPage from './pages/EvidenceBoardPage';
@@ -30,7 +29,6 @@ function App() {
           <Route path="/game/:roomCode" element={<GamePage />} />
           <Route path="/game/:roomCode/inspect" element={<SceneInspectPage />} />
           <Route path="/game/:roomCode/board" element={<EvidenceBoardPage />} />
-          <Route path="/game/:roomCode/vote" element={<VotePage />} />
           <Route path="/game/:roomCode/reveal" element={<RevealPage />} />
           <Route path="/game/:roomCode/meeting" element={<MeetingRoomPage />} />
           <Route path="/game/:roomCode/report" element={<ReplayReportPage />} />

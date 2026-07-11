@@ -485,9 +485,9 @@ const GamePage = () => {
 
             <button 
               className={styles.accuseBtn}
-              onClick={() => navigate(`/game/${roomCode}/vote`)}
+              onClick={() => navigate(`/game/${roomCode}/meeting`)}
             >
-              ACCUSE NOW
+              CALL MEETING
             </button>
           </section>
         </div>

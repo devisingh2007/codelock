@@ -30,9 +30,9 @@ const LeftSidebar = ({ caseInfo, showAccuse = false, roomCode }) => {
         {showAccuse && (
           <button 
             className={styles.accuseBtn} 
-            onClick={() => navigate(`/game/${roomCode}/vote`)}
+            onClick={() => navigate(`/game/${roomCode}/meeting`)}
           >
-            ACCUSE NOW
+            CALL MEETING
           </button>
         )}
         <button className={styles.actionBtn}><Settings size={20} /> <span>Settings</span></button>

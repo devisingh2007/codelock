@@ -41,14 +41,6 @@ const BottomActionBar = ({ roomCode }) => {
       </button>
 
       <button 
-        className={`${styles.actionBtn} ${isActive('vote') ? styles.active : ''}`}
-        onClick={() => navigate(`/game/${roomCode}/vote`)}
-      >
-        <div className={styles.iconWrapper}><AlertTriangle size={20} /></div>
-        <span>Accuse</span>
-      </button>
-
-      <button 
         className={`${styles.actionBtn} ${isActive('meeting') ? styles.active : ''}`}
         onClick={() => navigate(`/game/${roomCode}/meeting`)}
       >
