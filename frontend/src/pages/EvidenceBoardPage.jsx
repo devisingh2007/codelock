@@ -19,6 +19,12 @@ const EvidenceBoardPage = () => {
     fetchClues();
   }, [roomCode]);
 
+  // Deterministic rotation based on index — stable across re-renders
+  const getRotation = (idx) => {
+    const rotations = [-4, 3, -2, 5, -3, 2, -5, 4];
+    return rotations[idx % rotations.length];
+  };
+
   const handleClueClick = async (clueId) => {
     await toggleClueStatus(clueId);
     const data = await getClueBoard(roomCode);
@@ -79,9 +85,9 @@ const EvidenceBoardPage = () => {
               key={clue.id} 
               className={styles.clueCard}
               style={{
-                top: `${20 + (idx * 15)}%`,
-                left: `${10 + (idx * 25)}%`,
-                transform: `rotate(${Math.random() * 10 - 5}deg)`,
+                top: `${20 + (idx * 15) % 55}%`,
+                left: `${8 + (idx * 23) % 68}%`,
+                transform: `rotate(${getRotation(idx)}deg)`,
                 cursor: 'pointer'
               }}
               onClick={() => handleClueClick(clue.id)}

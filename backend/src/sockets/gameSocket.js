@@ -116,15 +116,24 @@ const initSocket = (server) => {
 
         history.reverse(); // oldest first
 
-        // Notify everyone in the room
+        // Get all currently connected sockets in this room
+        const socketsInRoom = await io.in(roomCode).fetchSockets();
+        const activeSockets = socketsInRoom.map(s => ({
+          socketId: s.id,
+          userId: s.user ? s.user._id : null,
+          username: s.user ? s.user.username : 'Investigator'
+        }));
+
+        // Notify everyone in the room (including the joining player's socketId)
         socket.to(roomCode).emit("user-joined", {
           userId: user._id,
           username: user.username,
           roomCode,
+          socketId: socket.id,
         });
 
         console.log(
-          `[Socket] ${user.username} joined room ${roomCode}`
+          `[Socket] ${user.username} joined room ${roomCode} with socketId ${socket.id}`
         );
 
         if (callback) {
@@ -133,6 +142,8 @@ const initSocket = (server) => {
             roomCode,
             players: room.players,
             chatHistory: history,
+            activeSockets,
+            yourSocketId: socket.id
           });
         }
       } catch (err) {
@@ -233,6 +244,25 @@ const initSocket = (server) => {
     });
 
     // ─────────────────────────────────────────────
+    // WebRTC Signaling relays
+    // ─────────────────────────────────────────────
+    socket.on("webrtc-signal", ({ targetSocketId, signal }) => {
+      io.to(targetSocketId).emit("webrtc-signal", {
+        senderSocketId: socket.id,
+        senderUsername: user.username,
+        signal
+      });
+    });
+
+    socket.on("webrtc-mute-state", ({ roomCode, isMuted }) => {
+      socket.to(roomCode).emit("webrtc-mute-state", {
+        socketId: socket.id,
+        username: user.username,
+        isMuted
+      });
+    });
+
+    // ─────────────────────────────────────────────
     // disconnect / cleanup
     // ─────────────────────────────────────────────
     socket.on("disconnect", (reason) => {
@@ -248,6 +278,7 @@ const initSocket = (server) => {
           userId: user._id,
           username: user.username,
           roomCode: socket.currentRoom,
+          socketId: socket.id,
         });
       }
     });
